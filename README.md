@@ -456,22 +456,33 @@ Quickshell was evaluated and crashes the shell — see
 
 ### Configuring animations
 
-Launch the visual config UI:
+The plugin ships a native settings panel (schema-driven, covers every
+animation's parameters, a timing section for the screensaver/lock delay,
+and a "Preview Now" button). Open it with:
 
 ```bash
-~/.config/omarchy/plugins/io.github.evol-luci.ascii-screensaver/bin/ascii-screensaver-config
+omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'
 ```
 
-Optionally, add a shortcut to your Omarchy menu by adding this to
-`~/.config/omarchy/extensions/omarchy-menu.jsonc`:
+There's no bar-widget entry point by design — a bar icon wasn't wanted for
+a settings panel this infrequently used — and no built-in "browse all
+plugin panels" menu in Omarchy, so add a shortcut to your Omarchy menu by
+putting this in `~/.config/omarchy/extensions/omarchy-menu.jsonc` (merged
+live with the system menu, no shell restart needed):
 
 ```jsonc
-"ascii-screensaver.config": {
-  "icon": "󰍹",
-  "label": "ASCII Screensaver Settings",
-  "action": "~/.config/omarchy/plugins/io.github.evol-luci.ascii-screensaver/bin/ascii-screensaver-config"
+"setup.ascii-screensaver": {
+  "icon": "󱄄",
+  "label": "ASCII Screensaver",
+  "action": "omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'"
 }
 ```
+
+That nests it under Setup (aliased `settings`) in the root menu. Bind it
+to a Hyprland keybinding instead if you'd rather skip the menu entirely.
+If you have the third-party Barkeep plugin installed, it can also summon
+this panel directly — but the `omarchy-shell summon`/menu-extension route
+above works without it.
 
 ### Migrating from the old AUR package
 
