@@ -488,6 +488,18 @@ timing and launch-mode settings, or any animation name:
 ```bash
 omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{"select":"bonsai"}'
 ```
+
+Each animation's page has a **Preview this animation** button that plays
+just that one, even while it is switched off or sitting at weight 0, so you
+can watch what you are tuning. General's **Preview now** instead runs the
+real selection — a weighted random pick, or your single chosen animation —
+which is how you check whether your weighting feels right.
+
+Previewing a named animation works from the command line too:
+
+```bash
+~/.config/omarchy/plugins/io.github.evol-luci.ascii-screensaver/bin/ascii-screensaver-launch force bonsai
+```
 If you have the third-party Barkeep plugin installed, it can also summon
 this panel directly — but the `omarchy-shell summon`/menu-extension route
 above works without it.
