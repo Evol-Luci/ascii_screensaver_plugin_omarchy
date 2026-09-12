@@ -6,6 +6,7 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import "ConfigPaths.js" as ConfigPaths
+import "ParamMeta.js" as ParamMeta
 
 Item {
   id: root
@@ -21,6 +22,13 @@ Item {
   property var schema: ({})
   property var persistedConfig: ({ enabled: true, mode: "random", selectedAnimation: "terrarium", animations: [] })
   property bool configLoaded: false
+
+  // "" is the welcome pane, "general" the shared settings, anything else
+  // is an animation name.
+  property string selection: ""
+
+  readonly property var animationNames: Object.keys(root.schema)
+  readonly property bool randomMode: root.persistedConfig.mode !== "single"
 
   function open(payloadJson) {
     closingFromHost = false
@@ -40,6 +48,14 @@ Item {
     }
   }
 
+  // Reassigning the property is what makes QML re-evaluate the bindings
+  // that read it; mutating the object in place changes the data silently
+  // and leaves the panel showing stale values.
+  function commit() {
+    root.persistedConfig = Object.assign({}, root.persistedConfig)
+    root.saveConfig()
+  }
+
   function saveConfig() {
     var text = JSON.stringify(root.persistedConfig, null, 2) + "\n"
     if (userConfigFile.loaded) userConfigFile.setText(text)
@@ -56,7 +72,19 @@ Item {
     root.configLoaded = true
   }
 
-  function animationEntry(name) {
+  // Read-only lookup. Bindings call this, so it must never mutate the
+  // config — creating entries during binding evaluation causes both stale
+  // renders and binding loops.
+  function entryFor(name) {
+    var list = root.persistedConfig.animations || []
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].name === name) return list[i]
+    }
+    return { name: name, enabled: true, weight: 2, params: ({}) }
+  }
+
+  // Mutating counterpart, only ever called from an edit handler.
+  function ensureEntry(name) {
     var list = root.persistedConfig.animations || []
     for (var i = 0; i < list.length; i++) {
       if (list[i] && list[i].name === name) return list[i]
@@ -67,17 +95,44 @@ Item {
     return created
   }
 
-  function paramValue(animationName, paramName, fallback) {
-    var entry = root.animationEntry(animationName)
-    var value = entry.params ? entry.params[paramName] : undefined
-    return value !== undefined ? value : fallback
+  function setAnimationEnabled(name, value) {
+    ensureEntry(name).enabled = value
+    commit()
   }
 
-  function setParamValue(animationName, paramName, value) {
-    var entry = root.animationEntry(animationName)
+  function setAnimationWeight(name, weight) {
+    ensureEntry(name).weight = weight
+    commit()
+  }
+
+  function setParamValue(name, paramName, value) {
+    var entry = ensureEntry(name)
     if (!entry.params) entry.params = ({})
     entry.params[paramName] = value
-    root.saveConfig()
+    commit()
+  }
+
+  function paramCount(name) {
+    var definition = root.schema[name]
+    return definition && definition.params ? Object.keys(definition.params).length : 0
+  }
+
+  function sidebarSubtitle(name) {
+    var entry = entryFor(name)
+    var count = paramCount(name)
+    var settings = count + (count === 1 ? " setting" : " settings")
+    if (entry.enabled === false) return "Off · " + settings
+    if (root.randomMode && Number(entry.weight) === 0) return "Never picked · " + settings
+    if (root.randomMode) return "Weight " + Number(entry.weight || 0) + " · " + settings
+    return settings
+  }
+
+  function enabledCount() {
+    var total = 0
+    for (var i = 0; i < root.animationNames.length; i++) {
+      if (entryFor(root.animationNames[i]).enabled !== false) total++
+    }
+    return total
   }
 
   FileView {
@@ -114,9 +169,13 @@ Item {
     visible: false
     title: "ASCII Screensaver Settings"
     color: Color.background
-    implicitWidth: Style.space(640)
-    implicitHeight: Style.space(760)
-    minimumSize: Qt.size(Style.space(420), Style.space(420))
+    implicitWidth: Style.space(860)
+    implicitHeight: Style.space(680)
+    minimumSize: Qt.size(Style.space(360), Style.space(360))
+
+    // Below this the two panes cannot both stay readable, so only one is
+    // shown at a time.
+    readonly property bool narrow: width < Style.space(620)
 
     onVisibleChanged: {
       if (!visible && !root.closingFromHost && root.shell && typeof root.shell.hide === "function") {
@@ -129,167 +188,177 @@ Item {
       onActivated: root.requestClose()
     }
 
-    ScrollView {
+    RowLayout {
       anchors.fill: parent
-      anchors.margins: Style.space(16)
-      clip: true
+      spacing: 0
 
-      ColumnLayout {
-        width: parent.width
-        spacing: Style.space(12)
+      // ------------------------------------------------------------ sidebar
+      Item {
+        Layout.fillHeight: true
+        Layout.fillWidth: window.narrow
+        Layout.preferredWidth: window.narrow ? -1 : Style.space(248)
+        visible: !window.narrow || root.selection === ""
 
-        RowLayout {
-          Layout.fillWidth: true
-          spacing: Style.space(12)
+        ScrollView {
+          id: sidebarScroll
+          anchors.fill: parent
+          contentWidth: availableWidth
+          clip: true
 
-          Toggle {
-            label: "Enabled"
-            checked: root.persistedConfig.enabled !== false
-            onClicked: {
-              root.persistedConfig.enabled = !checked
-              root.saveConfig()
-            }
-          }
+          ColumnLayout {
+            width: sidebarScroll.availableWidth
+            spacing: Style.spacing.xxs
 
-          Dropdown {
-            label: "Mode"
-            value: root.persistedConfig.mode === "single" ? "single" : "random"
-            options: ["random", "single"]
-            onChanged: function(newValue) {
-              root.persistedConfig.mode = newValue
-              root.saveConfig()
-            }
-          }
-        }
+            Item { Layout.preferredHeight: Style.spacing.lg }
 
-        Dropdown {
-          Layout.fillWidth: true
-          visible: root.persistedConfig.mode === "single"
-          label: "Selected animation"
-          value: root.persistedConfig.selectedAnimation || "terrarium"
-          options: Object.keys(root.schema)
-          onChanged: function(newValue) {
-            root.persistedConfig.selectedAnimation = newValue
-            root.saveConfig()
-          }
-        }
-
-        PanelSeparator { Layout.fillWidth: true }
-
-        PanelSectionHeader { text: "Timing" }
-
-        PanelSlider {
-          Layout.fillWidth: true
-          minimum: 10
-          maximum: 3600
-          step: 5
-          integer: true
-          value: root.persistedConfig.screensaverDelaySeconds !== undefined
-            ? root.persistedConfig.screensaverDelaySeconds : 150
-          onReleased: function(newValue) {
-            root.persistedConfig.screensaverDelaySeconds = Math.round(newValue)
-            root.saveConfig()
-          }
-        }
-
-        PanelSlider {
-          Layout.fillWidth: true
-          minimum: 10
-          maximum: 3600
-          step: 5
-          integer: true
-          value: root.persistedConfig.lockDelaySeconds !== undefined
-            ? root.persistedConfig.lockDelaySeconds : 300
-          onReleased: function(newValue) {
-            root.persistedConfig.lockDelaySeconds = Math.round(newValue)
-            root.saveConfig()
-          }
-        }
-
-        Button {
-          text: "Preview Now"
-          onClicked: Quickshell.execDetached(["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force"])
-        }
-
-        PanelSeparator { Layout.fillWidth: true }
-
-        Repeater {
-          model: Object.keys(root.schema)
-          delegate: ColumnLayout {
-            id: animationSection
-            required property string modelData
-            readonly property string animationName: modelData
-            readonly property var animationSchema: root.schema[animationName] || { title: animationName, params: ({}) }
-            Layout.fillWidth: true
-            spacing: Style.space(6)
-
-            PanelSectionHeader { text: animationSection.animationSchema.title || animationSection.animationName }
-
-            RowLayout {
+            SidebarRow {
               Layout.fillWidth: true
-              spacing: Style.space(12)
+              Layout.leftMargin: Style.spacing.md
+              Layout.rightMargin: Style.spacing.md
+              title: "General"
+              subtitle: root.persistedConfig.enabled === false
+                ? "Screensaver off"
+                : (root.randomMode ? "Random · " + ParamMeta.formatDuration(root.persistedConfig.screensaverDelaySeconds !== undefined ? root.persistedConfig.screensaverDelaySeconds : 150)
+                                   : "Single · " + ParamMeta.formatDuration(root.persistedConfig.screensaverDelaySeconds !== undefined ? root.persistedConfig.screensaverDelaySeconds : 150))
+              selected: root.selection === "general"
+              onClicked: root.selection = "general"
+            }
 
-              Toggle {
-                label: "Enabled"
-                checked: root.animationEntry(animationSection.animationName).enabled !== false
-                onClicked: {
-                  root.animationEntry(animationSection.animationName).enabled = !checked
-                  root.saveConfig()
-                }
-              }
+            PanelSeparator {
+              Layout.fillWidth: true
+              Layout.topMargin: Style.spacing.sm
+              Layout.bottomMargin: Style.spacing.sm
+              Layout.leftMargin: Style.spacing.xl
+              Layout.rightMargin: Style.spacing.xl
+            }
 
-              PanelSlider {
-                Layout.fillWidth: true
-                visible: root.persistedConfig.mode !== "single"
-                minimum: 0
-                maximum: 20
-                step: 1
-                integer: true
-                value: root.animationEntry(animationSection.animationName).weight || 0
-                onReleased: function(newValue) {
-                  root.animationEntry(animationSection.animationName).weight = Math.round(newValue)
-                  root.saveConfig()
-                }
-              }
+            PanelSectionHeader {
+              text: "Animations"
+              Layout.leftMargin: Style.spacing.xl
             }
 
             Repeater {
-              model: Object.keys(animationSection.animationSchema.params || {})
-              delegate: RowLayout {
-                id: paramRow
+              model: root.animationNames
+
+              delegate: SidebarRow {
                 required property string modelData
-                readonly property string paramName: modelData
-                readonly property var paramSchema: animationSection.animationSchema.params[paramName]
+
                 Layout.fillWidth: true
-
-                PanelSlider {
-                  Layout.fillWidth: true
-                  visible: paramRow.paramSchema.type === "range"
-                  minimum: paramRow.paramSchema.min !== undefined ? paramRow.paramSchema.min : 0
-                  maximum: paramRow.paramSchema.max !== undefined ? paramRow.paramSchema.max : 1
-                  step: paramRow.paramSchema.step !== undefined ? paramRow.paramSchema.step : 0.1
-                  integer: paramRow.paramSchema.integer === true
-                  value: root.paramValue(animationSection.animationName, paramRow.paramName, paramRow.paramSchema.value)
-                  onReleased: function(newValue) {
-                    root.setParamValue(animationSection.animationName, paramRow.paramName,
-                      paramRow.paramSchema.integer === true ? Math.round(newValue) : newValue)
-                  }
-                }
-
-                Dropdown {
-                  Layout.fillWidth: true
-                  visible: paramRow.paramSchema.type === "select"
-                  label: paramRow.paramName
-                  value: String(root.paramValue(animationSection.animationName, paramRow.paramName, paramRow.paramSchema.value))
-                  options: paramRow.paramSchema.options || []
-                  onChanged: function(newValue) {
-                    root.setParamValue(animationSection.animationName, paramRow.paramName, newValue)
-                  }
-                }
+                Layout.leftMargin: Style.spacing.md
+                Layout.rightMargin: Style.spacing.md
+                title: root.schema[modelData] && root.schema[modelData].title
+                  ? root.schema[modelData].title : ParamMeta.formatLabel(modelData)
+                subtitle: root.sidebarSubtitle(modelData)
+                selected: root.selection === modelData
+                dimmed: root.entryFor(modelData).enabled === false
+                onClicked: root.selection = modelData
               }
             }
 
-            PanelSeparator { Layout.fillWidth: true }
+            Item { Layout.preferredHeight: Style.spacing.lg }
+          }
+        }
+      }
+
+      Rectangle {
+        visible: !window.narrow
+        Layout.fillHeight: true
+        Layout.preferredWidth: Style.normalBorderWidth
+        color: Color.muted
+        opacity: 0.25
+      }
+
+      // ------------------------------------------------------------- detail
+      Item {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        visible: !window.narrow || root.selection !== ""
+
+        ScrollView {
+          id: detailScroll
+          anchors.fill: parent
+          contentWidth: availableWidth
+          clip: true
+
+          ColumnLayout {
+            // Binding to the ScrollView's availableWidth (rather than
+            // parent.width) is what makes the pane reflow when the window
+            // is resized.
+            width: detailScroll.availableWidth
+            spacing: Style.spacing.lg
+
+            Item { Layout.preferredHeight: Style.spacing.md }
+
+            Button {
+              Layout.leftMargin: Style.spacing.xl
+              visible: window.narrow
+              text: "Back"
+              onClicked: root.selection = ""
+            }
+
+            WelcomePane {
+              Layout.fillWidth: true
+              Layout.leftMargin: Style.spacing.xl
+              Layout.rightMargin: Style.spacing.xl
+              visible: root.selection === ""
+              animationCount: root.animationNames.length
+              enabledCount: root.enabledCount()
+              mode: root.persistedConfig.mode || "random"
+            }
+
+            GeneralDetail {
+              Layout.fillWidth: true
+              Layout.leftMargin: Style.spacing.xl
+              Layout.rightMargin: Style.spacing.xl
+              visible: root.selection === "general"
+              screensaverEnabled: root.persistedConfig.enabled !== false
+              mode: root.persistedConfig.mode || "random"
+              selectedAnimation: root.persistedConfig.selectedAnimation || "terrarium"
+              animationOptions: root.animationNames
+              screensaverDelaySeconds: root.persistedConfig.screensaverDelaySeconds !== undefined
+                ? root.persistedConfig.screensaverDelaySeconds : 150
+              lockDelaySeconds: root.persistedConfig.lockDelaySeconds !== undefined
+                ? root.persistedConfig.lockDelaySeconds : 300
+
+              onEnabledToggled: function (value) {
+                root.persistedConfig.enabled = value
+                root.commit()
+              }
+              onModeChanged: function (value) {
+                root.persistedConfig.mode = value
+                root.commit()
+              }
+              onSelectedAnimationChanged: function (value) {
+                root.persistedConfig.selectedAnimation = value
+                root.commit()
+              }
+              onScreensaverDelayChanged: function (seconds) {
+                root.persistedConfig.screensaverDelaySeconds = seconds
+                root.commit()
+              }
+              onLockDelayChanged: function (seconds) {
+                root.persistedConfig.lockDelaySeconds = seconds
+                root.commit()
+              }
+              onPreviewRequested: Quickshell.execDetached(["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force"])
+            }
+
+            AnimationDetail {
+              Layout.fillWidth: true
+              Layout.leftMargin: Style.spacing.xl
+              Layout.rightMargin: Style.spacing.xl
+              visible: root.selection !== "" && root.selection !== "general"
+              animationName: root.selection
+              animationSchema: root.schema[root.selection] || ({ title: root.selection, params: ({}) })
+              entry: root.entryFor(root.selection)
+              randomMode: root.randomMode
+
+              onEnabledToggled: function (value) { root.setAnimationEnabled(root.selection, value) }
+              onWeightChanged: function (weight) { root.setAnimationWeight(root.selection, weight) }
+              onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
+            }
+
+            Item { Layout.preferredHeight: Style.spacing.xl }
           }
         }
       }
