@@ -1,0 +1,1620 @@
+{
+  "bonsai": {
+    "title": "Bonsai",
+    "hint": "Procedural tree growth with leaf density and rest time between redraws.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "natural",
+        "options": [
+          "natural",
+          "autumn",
+          "sakura",
+          "cherry",
+          "purple",
+          "mono"
+        ]
+      },
+      "leafDensity": {
+        "type": "range",
+        "min": 0.2,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "holdTime": {
+        "type": "range",
+        "min": 60,
+        "max": 900,
+        "step": 30,
+        "value": 360,
+        "integer": true
+      }
+    }
+  },
+  "moon": {
+    "title": "Moon",
+    "hint": "Orbital ASCII scene with star count, floaters, glow, and palette.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "silver",
+        "options": [
+          "silver",
+          "gold",
+          "blood",
+          "blue",
+          "green"
+        ]
+      },
+      "stars": {
+        "type": "range",
+        "min": 0,
+        "max": 300,
+        "step": 10,
+        "value": 120,
+        "integer": true
+      },
+      "floaterFreq": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "glowIntensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "crawl": {
+    "title": "Crawl",
+    "hint": "Retro title crawl with selectable episode and text speed.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "gold",
+        "options": [
+          "gold",
+          "white",
+          "green",
+          "blue",
+          "red"
+        ]
+      },
+      "episode": {
+        "type": "range",
+        "min": -1,
+        "max": 5,
+        "step": 1,
+        "value": -1,
+        "integer": true
+      }
+    }
+  },
+  "blackhole": {
+    "title": "Black Hole",
+    "hint": "Accretion disk animation with jet toggle, disk size, and inclination.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "fire",
+        "options": [
+          "fire",
+          "cool",
+          "plasma",
+          "mono"
+        ]
+      },
+      "diskSize": {
+        "type": "range",
+        "min": 0.4,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "jets": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      },
+      "inclination": {
+        "type": "range",
+        "min": 0,
+        "max": 1,
+        "step": 0.01,
+        "value": 0.36,
+        "integer": false
+      }
+    }
+  },
+  "nixie": {
+    "title": "Nixie",
+    "hint": "Vintage nixie tube clock with cathode poisoning, neon glow bloom, and per-tube flicker. Inspired by joeparadiso/nixie-tube-clock.",
+    "params": {
+      "glowColor": {
+        "type": "select",
+        "value": "amber",
+        "options": [
+          "amber",
+          "red",
+          "green",
+          "blue",
+          "white",
+          "purple"
+        ]
+      },
+      "flickerIntensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "poisoningSpeed": {
+        "type": "range",
+        "min": 0.5,
+        "max": 4,
+        "step": 0.1,
+        "value": 1.5,
+        "integer": false
+      },
+      "showSeconds": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      },
+      "tubeStyle": {
+        "type": "select",
+        "value": "classic",
+        "options": [
+          "classic",
+          "slim",
+          "wide"
+        ]
+      },
+      "tubeColons": {
+        "type": "select",
+        "value": 0,
+        "options": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "aurora": {
+    "title": "Aurora",
+    "hint": "Procedural aurora borealis ribbons with twinkling star field.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "aurora",
+        "options": [
+          "aurora",
+          "northern",
+          "southern",
+          "neon",
+          "mono"
+        ]
+      },
+      "bands": {
+        "type": "range",
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "value": 3,
+        "integer": true
+      },
+      "brightness": {
+        "type": "range",
+        "min": 0.2,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "stars": {
+        "type": "range",
+        "min": 0,
+        "max": 400,
+        "step": 10,
+        "value": 150,
+        "integer": true
+      }
+    }
+  },
+  "mandelbrot": {
+    "title": "Mandelbrot",
+    "hint": "Zooming ASCII fractal with auto-jumping boundary regions.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "classic",
+        "options": [
+          "classic",
+          "fire",
+          "ocean",
+          "neon",
+          "mono"
+        ]
+      },
+      "maxIter": {
+        "type": "range",
+        "min": 16,
+        "max": 256,
+        "step": 16,
+        "value": 64,
+        "integer": true
+      },
+      "charset": {
+        "type": "select",
+        "value": "classic",
+        "options": [
+          "classic",
+          "blocks",
+          "dots"
+        ]
+      },
+      "autoJump": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "pipes": {
+    "title": "Pipes",
+    "hint": "Growing pipe network using Unicode box-drawing characters.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "blue",
+        "options": [
+          "blue",
+          "green",
+          "amber",
+          "neon",
+          "mono"
+        ]
+      },
+      "density": {
+        "type": "range",
+        "min": 1,
+        "max": 12,
+        "step": 1,
+        "value": 6,
+        "integer": true
+      },
+      "fading": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      },
+      "spawnRate": {
+        "type": "range",
+        "min": 0.2,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "fluid": {
+    "title": "Fluid",
+    "hint": "Real-time fluid dynamics simulation with dye injection rendered in ASCII.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "plasma",
+        "options": [
+          "plasma",
+          "ocean",
+          "fire",
+          "neon",
+          "mono"
+        ]
+      },
+      "resolution": {
+        "type": "select",
+        "value": "medium",
+        "options": [
+          "low",
+          "medium",
+          "high",
+          "ultra"
+        ]
+      },
+      "diffusion": {
+        "type": "range",
+        "min": 0,
+        "max": 0.01,
+        "step": 0.0001,
+        "value": 0.0001,
+        "integer": false
+      },
+      "viscosity": {
+        "type": "range",
+        "min": 0,
+        "max": 0.001,
+        "step": 5e-05,
+        "value": 0,
+        "integer": false
+      },
+      "dyeFade": {
+        "type": "range",
+        "min": 0.98,
+        "max": 1,
+        "step": 0.001,
+        "value": 0.995,
+        "integer": false
+      }
+    }
+  },
+  "thunderstorm": {
+    "title": "Thunderstorm",
+    "hint": "Dynamic rain, lightning bolts, and storm clouds in ASCII.",
+    "params": {
+      "intensity": {
+        "type": "range",
+        "min": 0.2,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "wind": {
+        "type": "range",
+        "min": -1,
+        "max": 1,
+        "step": 0.05,
+        "value": 0.3,
+        "integer": false
+      },
+      "lightning": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "tempest",
+        "options": [
+          "tempest",
+          "tropical",
+          "desert",
+          "arctic",
+          "mono"
+        ]
+      }
+    }
+  },
+  "incense": {
+    "title": "Incense",
+    "hint": "Smoke particle simulation rising from an incense stick with wind and turbulence controls.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "smokeDensity": {
+        "type": "range",
+        "min": 0.2,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "smokeLifespan": {
+        "type": "range",
+        "min": 0.5,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "smokeColor": {
+        "type": "select",
+        "value": "warm",
+        "options": [
+          "warm",
+          "cool",
+          "incense",
+          "sage",
+          "lavender",
+          "mono"
+        ]
+      },
+      "windDirection": {
+        "type": "range",
+        "min": -1,
+        "max": 1,
+        "step": 0.05,
+        "value": 0,
+        "integer": false
+      },
+      "windSpeed": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 0.3,
+        "integer": false
+      },
+      "randomization": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 0.8,
+        "integer": false
+      }
+    }
+  },
+  "campfire": {
+    "title": "Campfire",
+    "hint": "Layered noise-driven flame tongues with rising embers, a dark forest silhouette, and a drifting firefly.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "warm",
+        "options": [
+          "warm",
+          "blueFlame",
+          "greenFlame",
+          "violetFlame",
+          "mono"
+        ]
+      },
+      "flameHeight": {
+        "type": "range",
+        "min": 0.5,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "emberRate": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "crackleIntensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "forestSilhouette": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "planet": {
+    "title": "Planet",
+    "hint": "Rotating planet sphere with atmosphere, optional rings, and polar aurora.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 0.5,
+        "integer": false
+      },
+      "planetColor": {
+        "type": "select",
+        "value": "earth",
+        "options": [
+          "earth",
+          "mars",
+          "ice",
+          "gas",
+          "lava",
+          "ocean",
+          "mono"
+        ]
+      },
+      "planetSize": {
+        "type": "range",
+        "min": 0.3,
+        "max": 1.5,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "rings": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      },
+      "atmosphereColor": {
+        "type": "select",
+        "value": "cyan",
+        "options": [
+          "cyan",
+          "amber",
+          "violet",
+          "green",
+          "red",
+          "white"
+        ]
+      },
+      "atmosphereDensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "atmosphereTurbulence": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 0.6,
+        "integer": false
+      },
+      "atmosphereDirection": {
+        "type": "range",
+        "min": -1,
+        "max": 1,
+        "step": 0.05,
+        "value": 0.3,
+        "integer": false
+      },
+      "aurora": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "gameoflife": {
+    "title": "Game of Life",
+    "hint": "Conway cells rendered as growing and wilting garden glyphs.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "spring",
+        "options": [
+          "spring",
+          "autumn",
+          "neon",
+          "mono"
+        ]
+      },
+      "cellSize": {
+        "type": "range",
+        "min": 8,
+        "max": 32,
+        "step": 1,
+        "value": 16,
+        "integer": true
+      },
+      "density": {
+        "type": "range",
+        "min": 0,
+        "max": 1,
+        "step": 0.01,
+        "value": 0.35,
+        "integer": false
+      },
+      "reseedMode": {
+        "type": "select",
+        "value": "mixed",
+        "options": [
+          "random",
+          "classic",
+          "mixed"
+        ]
+      }
+    }
+  },
+  "sandmandala": {
+    "title": "Sand Mandala",
+    "hint": "Radial sand mandala that builds grain by grain, holds, dissolves, and rebuilds.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "tibetan",
+        "options": [
+          "tibetan",
+          "desert",
+          "ocean",
+          "jewel",
+          "mono"
+        ]
+      },
+      "symmetry": {
+        "type": "select",
+        "value": 8,
+        "options": [
+          4,
+          6,
+          8,
+          12
+        ]
+      },
+      "holdTime": {
+        "type": "range",
+        "min": 0,
+        "max": 900,
+        "step": 30,
+        "value": 300,
+        "integer": true
+      },
+      "dissolveStyle": {
+        "type": "select",
+        "value": "wind",
+        "options": [
+          "sweep",
+          "wind",
+          "fade"
+        ]
+      }
+    }
+  },
+  "boids": {
+    "title": "Boids Flock",
+    "hint": "Classic boid flocking \u2014 separation, alignment, cohesion \u2014 with an optional predator that scatters the flock.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "birds",
+        "options": [
+          "birds",
+          "fish",
+          "abstract",
+          "mono"
+        ]
+      },
+      "flockSize": {
+        "type": "range",
+        "min": 20,
+        "max": 150,
+        "step": 1,
+        "value": 60,
+        "integer": true
+      },
+      "cohesion": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "separation": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "predator": {
+        "type": "select",
+        "value": 0,
+        "options": [
+          0,
+          1
+        ]
+      },
+      "predatorSpeed": {
+        "type": "range",
+        "min": 0.5,
+        "max": 3,
+        "step": 0.05,
+        "value": 1.35,
+        "integer": false
+      }
+    }
+  },
+  "windchimes": {
+    "title": "Wind Chimes",
+    "hint": "Hanging chime tubes swaying as damped pendulums in a gusty breeze, with proximity glint flashes and synthesized bell tones (press M to toggle sound).",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "bronze",
+        "options": [
+          "bronze",
+          "silver",
+          "bamboo",
+          "glass",
+          "mono"
+        ]
+      },
+      "chimeCount": {
+        "type": "range",
+        "min": 3,
+        "max": 7,
+        "step": 1,
+        "value": 5,
+        "integer": true
+      },
+      "windStrength": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "gustFrequency": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "doublePendulum": {
+        "type": "select",
+        "value": 0,
+        "options": [
+          0,
+          1
+        ]
+      },
+      "soundType": {
+        "type": "select",
+        "value": "bell",
+        "options": [
+          "bell",
+          "crystal",
+          "wood",
+          "gong"
+        ]
+      },
+      "pitch": {
+        "type": "range",
+        "min": 2,
+        "max": 5,
+        "step": 0.05,
+        "value": 2,
+        "integer": false
+      }
+    }
+  },
+  "vinyl": {
+    "title": "Vinyl Spin",
+    "hint": "Spinning turntable with a rotating groove sheen, procedural radial label, tracking tonearm, and lamplit dust motes.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "vinylBlack",
+        "options": [
+          "vinylBlack",
+          "red",
+          "blue",
+          "gold",
+          "mono"
+        ]
+      },
+      "dustDensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "lampGlow": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "waterfall": {
+    "title": "Waterfall",
+    "hint": "Cascading waterfall through a mossy rock channel with a base mist/spray burst and an optional faint rainbow arc.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "clear",
+        "options": [
+          "clear",
+          "glacier",
+          "jungle",
+          "moonlit",
+          "mono"
+        ]
+      },
+      "flowDensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "mistIntensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "rainbow": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "jellyfish": {
+    "title": "Jellyfish Drift",
+    "hint": "Bioluminescent jellyfish drifting through deep-sea darkness with pulsing bell glow, wavy trailing tentacles, and plankton sparkle.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "blue",
+        "options": [
+          "blue",
+          "purple",
+          "teal",
+          "pink",
+          "mono"
+        ]
+      },
+      "jellyfishCount": {
+        "type": "range",
+        "min": 3,
+        "max": 10,
+        "step": 1,
+        "value": 6,
+        "integer": true
+      },
+      "glowIntensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      },
+      "driftCurrents": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "terrarium": {
+    "title": "Terrarium",
+    "hint": "A living ecosystem: plants grow, seed, wilt and decay; fungi recycle litter into soil nutrients; detritivores, leaf-grazing snails, a centipede predator, and a foraging ant colony cycle through closed water, nutrient, and light cycles under day/night and seasons. Nothing goes extinct.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "mossy",
+        "options": [
+          "mossy",
+          "tropical",
+          "desert",
+          "autumn",
+          "mono"
+        ]
+      },
+      "plantDensity": {
+        "type": "range",
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "value": 3,
+        "integer": true
+      },
+      "condensation": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "growthCycle": {
+        "type": "select",
+        "value": "loop",
+        "options": [
+          "loop",
+          "static"
+        ]
+      },
+      "cycleTime": {
+        "type": "range",
+        "min": 0,
+        "max": 30,
+        "step": 0.5,
+        "value": 8,
+        "integer": false
+      },
+      "seasonTime": {
+        "type": "range",
+        "min": 0,
+        "max": 60,
+        "step": 1,
+        "value": 24,
+        "integer": true
+      },
+      "faunaRate": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "predatorRate": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "aquarium": {
+    "title": "Aquarium",
+    "hint": "A living reef: the fish school rests at night, flees a roaming predator, and swarms feeding events, under a day/night lighting cycle with sunbeams, plankton, kelp, and sand crabs.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "tropical",
+        "options": [
+          "tropical",
+          "deepsea",
+          "freshwater",
+          "neon",
+          "mono"
+        ]
+      },
+      "fishCount": {
+        "type": "range",
+        "min": 5,
+        "max": 20,
+        "step": 1,
+        "value": 10,
+        "integer": true
+      },
+      "kelpDensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "bubbleRate": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "cycleTime": {
+        "type": "range",
+        "min": 0,
+        "max": 30,
+        "step": 0.5,
+        "value": 8,
+        "integer": false
+      },
+      "predatorRate": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "feedRate": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "spiderweb": {
+    "title": "Spider Web",
+    "hint": "A spider builds its web strand by strand, hunts drifting prey, flees wasp raids and bird strikes, and repairs the damage \u2014 all under a soft moonlight glow.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "moonlit",
+        "options": [
+          "moonlit",
+          "dawn",
+          "amber",
+          "frost",
+          "mono"
+        ]
+      },
+      "pacing": {
+        "type": "select",
+        "value": "medium",
+        "options": [
+          "brisk",
+          "medium",
+          "slow",
+          "glacial"
+        ]
+      },
+      "webSway": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "dewDensity": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "preyRate": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "predatorRate": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "moonGlow": {
+        "type": "range",
+        "min": 0,
+        "max": 3,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "volcano": {
+    "title": "Volcanic Flow",
+    "hint": "Night mountain with a glowing crater, lava flowing down a fixed channel, eruption sparks, and a rising smoke plume.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "classic",
+        "options": [
+          "classic",
+          "sulfur",
+          "obsidian",
+          "blueFlame",
+          "mono"
+        ]
+      },
+      "flowIntensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "eruptionRate": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "smokeDensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "oscilloscope": {
+    "title": "Oscilloscope",
+    "hint": "A CRT lab instrument left running forever \u2014 a glowing phosphor Lissajous trace with decay, scanlines and bloom.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "complexity": {
+        "type": "range",
+        "min": 1,
+        "max": 6,
+        "step": 1,
+        "value": 3,
+        "integer": true
+      },
+      "phosphorDecay": {
+        "type": "range",
+        "min": 0.8,
+        "max": 0.99,
+        "step": 0.01,
+        "value": 0.92,
+        "integer": false
+      },
+      "noise": {
+        "type": "range",
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "value": 0.2,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "phosphor",
+        "options": [
+          "phosphor",
+          "amber",
+          "blue"
+        ]
+      },
+      "shapeSet": {
+        "type": "select",
+        "value": "all",
+        "options": [
+          "all",
+          "curves",
+          "geometric",
+          "waveforms"
+        ]
+      },
+      "cyclePeriod": {
+        "type": "range",
+        "min": 4,
+        "max": 40,
+        "step": 1,
+        "value": 14,
+        "integer": true
+      },
+      "morphTime": {
+        "type": "range",
+        "min": 0.3,
+        "max": 5,
+        "step": 0.1,
+        "value": 1.5,
+        "integer": false
+      }
+    }
+  },
+  "pendulum_wave": {
+    "title": "Pendulum Wave",
+    "hint": "Pendulums of progressively shorter period swinging in and out of phase \u2014 travelling waves that periodically snap back into perfect sync.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.05,
+        "max": 1,
+        "step": 0.025,
+        "value": 0.25,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "spectrum",
+        "options": [
+          "spectrum",
+          "warm",
+          "cool",
+          "mono"
+        ]
+      },
+      "pendulumCount": {
+        "type": "range",
+        "min": 8,
+        "max": 24,
+        "step": 1,
+        "value": 18,
+        "integer": true
+      },
+      "cycleTime": {
+        "type": "range",
+        "min": 4,
+        "max": 16,
+        "step": 0.5,
+        "value": 8,
+        "integer": false
+      },
+      "swingAngle": {
+        "type": "range",
+        "min": 0.1,
+        "max": 0.8,
+        "step": 0.05,
+        "value": 0.4,
+        "integer": false
+      }
+    }
+  },
+  "glitch_field": {
+    "title": "Glitch Field",
+    "hint": "A broken digital reality \u2014 a character grid torn by drifting corruption bands, RGB split, scanline tearing and packet loss.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "terminal",
+        "options": [
+          "terminal",
+          "amber",
+          "vapor",
+          "mono"
+        ]
+      },
+      "density": {
+        "type": "range",
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "value": 0.8,
+        "integer": false
+      },
+      "corruptionRate": {
+        "type": "range",
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "value": 0.2,
+        "integer": false
+      },
+      "scanBands": {
+        "type": "range",
+        "min": 0,
+        "max": 6,
+        "step": 1,
+        "value": 3,
+        "integer": true
+      },
+      "chaos": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      }
+    }
+  },
+  "cyber_deck": {
+    "title": "Cyber Deck",
+    "hint": "A fictional 1998 hacker terminal that never finishes booting \u2014 boot sequence, hex dumps, hardware diagrams, glitches and the occasional kernel panic.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "terminalStyle": {
+        "type": "select",
+        "value": "amber",
+        "options": [
+          "amber",
+          "green",
+          "blue"
+        ]
+      },
+      "corruption": {
+        "type": "range",
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "value": 0.2,
+        "integer": false
+      },
+      "bootCycle": {
+        "type": "range",
+        "min": 0,
+        "max": 1,
+        "step": 1,
+        "value": 1,
+        "integer": true
+      },
+      "scrollSpeed": {
+        "type": "range",
+        "min": 1,
+        "max": 20,
+        "step": 1,
+        "value": 8,
+        "integer": true
+      }
+    }
+  },
+  "attractor": {
+    "title": "Attractor",
+    "hint": "A particle tracing a real strange-attractor equation \u2014 Lorenz butterfly and R\u00f6ssler ribbon rendered as speed-weighted ASCII glyphs through a slowly rotating 3D camera.",
+    "params": {
+      "speed": {
+        "type": "range",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "cycleTime": {
+        "type": "range",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "value": 30,
+        "integer": true
+      },
+      "trailLength": {
+        "type": "range",
+        "min": 200,
+        "max": 2000,
+        "step": 50,
+        "value": 800,
+        "integer": true
+      },
+      "rotationSpeed": {
+        "type": "range",
+        "min": 0,
+        "max": 0.5,
+        "step": 0.01,
+        "value": 0.1,
+        "integer": false
+      },
+      "palette": {
+        "type": "select",
+        "value": "ice",
+        "options": [
+          "ice",
+          "ember",
+          "spectrum",
+          "mono"
+        ]
+      }
+    }
+  }
+}

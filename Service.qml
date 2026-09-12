@@ -4,6 +4,7 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import "IdleModel.js" as IdleModel
+import "ConfigPaths.js" as ConfigPaths
 
 Item {
   id: root
@@ -18,8 +19,16 @@ Item {
   readonly property int defaultLockSeconds: 300
   readonly property var idleConfig: shell && shell.shellConfig && shell.shellConfig.idle
     ? shell.shellConfig.idle : (shell && shell.idleConfig ? shell.idleConfig : ({}))
-  readonly property int screensaverTimeoutSeconds: secondsFromConfig(idleConfig.screensaver, defaultScreensaverSeconds)
-  readonly property int lockTimeoutSeconds: secondsFromConfig(idleConfig.lock, defaultLockSeconds)
+  // Plugin-owned override, set from the native settings panel and stored
+  // in our own screensaver-config.json — preferred over the shared
+  // idleConfig when present, since third-party plugins have no sanctioned
+  // write path to shell.json's idle.* keys.
+  readonly property int screensaverTimeoutSeconds: secondsFromConfig(
+    ourConfig.screensaverDelaySeconds !== undefined ? ourConfig.screensaverDelaySeconds : idleConfig.screensaver,
+    defaultScreensaverSeconds)
+  readonly property int lockTimeoutSeconds: secondsFromConfig(
+    ourConfig.lockDelaySeconds !== undefined ? ourConfig.lockDelaySeconds : idleConfig.lock,
+    defaultLockSeconds)
   readonly property int firstIdleTimeoutSeconds: Math.min(screensaverTimeoutSeconds, lockTimeoutSeconds)
   readonly property int screensaverDelaySeconds: Math.max(0, screensaverTimeoutSeconds - firstIdleTimeoutSeconds)
   readonly property int lockDelaySeconds: Math.max(0, lockTimeoutSeconds - firstIdleTimeoutSeconds)
@@ -37,9 +46,19 @@ Item {
   property string lastEventAt: ""
   property var screensaverWindows: ({})
   property int screensaverWindowCount: 0
+  property var ourConfig: ({})
 
   function secondsFromConfig(value, fallback) {
     return IdleModel.secondsFromConfig(value, fallback)
+  }
+
+  function parseOurConfig(jsonText) {
+    try {
+      var parsed = JSON.parse(jsonText)
+      root.ourConfig = (parsed && typeof parsed === "object") ? parsed : ({})
+    } catch (e) {
+      root.ourConfig = ({})
+    }
   }
 
   function nowIso() {
@@ -334,6 +353,26 @@ Item {
     watchChanges: true
     printErrors: false
     onFileChanged: root.refreshStayAwakeState()
+  }
+
+  FileView {
+    id: ourConfigFile
+    path: ConfigPaths.userConfigPath()
+    watchChanges: true
+    printErrors: false
+    onLoaded: root.parseOurConfig(text())
+    onLoadFailed: function(error) { bundledConfigFile.reload() }
+    onFileChanged: reload()
+  }
+
+  FileView {
+    id: bundledConfigFile
+    path: ConfigPaths.bundledConfigPath(root.pluginDir)
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: root.parseOurConfig(text())
+    onLoadFailed: function(error) { root.ourConfig = ({}) }
   }
 
   Component.onCompleted: {

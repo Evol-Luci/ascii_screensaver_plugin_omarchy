@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Diffs our cloned idle Service.qml against the currently-installed
-# omarchy.idle Service.qml. Expected diff is exactly the pluginDir property
-# and the launchScreensaver() body (see Task 3 of the migration plan) — a
-# larger diff means an Omarchy update changed idle/lock semantics and this
-# clone needs review before it's trusted again.
+# omarchy.idle Service.qml. Expected diff is the pluginDir property, the
+# launchScreensaver() body (see Task 3 of the migration plan), and the
+# plugin-owned screensaver/lock delay override (ConfigPaths import, ourConfig
+# property + parseOurConfig(), and its two FileViews) — a larger diff means
+# an Omarchy update changed idle/lock semantics and this clone needs review
+# before it's trusted again.
 #
 # Exit codes: 0 = diff within expected bounds, 1 = drift detected,
 # 2 = upstream Service.qml not found.
@@ -14,7 +16,7 @@ set -uo pipefail
 PLUGIN_ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 UPSTREAM="${OMARCHY_PATH:-/usr/share/omarchy}/shell/plugins/services/idle/Service.qml"
 OURS="${PLUGIN_ROOT}/Service.qml"
-EXPECTED_CHANGED_LINES=8
+EXPECTED_CHANGED_LINES=48
 
 if [[ ! -f "$UPSTREAM" ]]; then
   echo "check-upstream-drift: upstream Service.qml not found at $UPSTREAM (Omarchy moved or renamed it)" >&2
