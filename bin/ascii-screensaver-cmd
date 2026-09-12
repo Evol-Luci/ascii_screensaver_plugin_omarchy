@@ -70,12 +70,14 @@ trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
 hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null \
   || hyprctl keyword cursor:invisible true &>/dev/null
 
-TMPDIR="/tmp/screensaver-${ANIMATION}-$$"
-mkdir -p "$TMPDIR"
+RUN_DIR="${XDG_RUNTIME_DIR}/ascii-screensaver"
+mkdir -p "$RUN_DIR"
+CHROMIUM_USER_DATA_DIR="$(mktemp -d "${RUN_DIR}/${ANIMATION}-XXXXXXXX")"
+CHROMIUM_ERROR_LOG="${RUN_DIR}/chromium-errors.log"
 
 chromium \
   --class="$SCREENSAVER_CLASS" \
-  --user-data-dir="$TMPDIR" \
+  --user-data-dir="$CHROMIUM_USER_DATA_DIR" \
   --ozone-platform=wayland \
   --kiosk \
   --no-first-run \
@@ -86,7 +88,7 @@ chromium \
   --disable-translate \
   --disable-dev-shm-usage \
   --background-color=000000 \
-  "$HTML_URL" 2>>/tmp/screensaver-chromium-errors.log
+  "$HTML_URL" 2>>"$CHROMIUM_ERROR_LOG"
 
-rm -rf "$TMPDIR" 2>/dev/null
+rm -rf "$CHROMIUM_USER_DATA_DIR" 2>/dev/null
 exit_screensaver

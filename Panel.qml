@@ -76,7 +76,7 @@ Item {
       var parsed = JSON.parse(jsonText)
       if (parsed && typeof parsed === "object") root.persistedConfig = parsed
     } catch (e) {
-      console.warn("ascii-screensaver Settings.qml: failed to parse config:", e)
+      console.warn("ascii-screensaver Panel.qml: failed to parse config:", e)
     }
     root.configLoaded = true
   }

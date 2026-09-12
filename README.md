@@ -53,13 +53,24 @@ under `animations/` are plain, dependency-free HTML/JS, unchanged by this
 plugin migration.
 ## Configuration
 
-### Visual config UI (recommended)
+The **recommended** way to configure this plugin is the native settings
+panel described in [Configuring animations](#configuring-animations)
+below — it runs inside the Omarchy shell itself, needs nothing extra
+running, and covers every animation's parameters.
+
+### Legacy browser-based config UI (fallback, not recommended)
 
 ```bash
 ./ascii-screensaver-config
 ```
 
-Opens a browser-based UI with:
+This launches `legacy/screensaver-config-server.py`, a small local HTTP
+server (bound to `127.0.0.1`) that serves a browser UI with the same
+controls as the native panel — enable/disable, launch mode, per-animation
+weights/params, and a live preview. It predates the native panel and is
+kept only as a fallback for older setups; its `/api/config` endpoint has
+no authentication, so prefer the native panel unless you have a specific
+reason to use this instead. Opens a browser-based UI with:
 - Global enable/disable toggle
 - Launch mode: weighted random or always-use-one
 - Per-animation enable/disable and weight sliders
@@ -441,6 +452,23 @@ required. Timeouts (`idle.screensaver`, `idle.lock`) are the same
 `~/.config/omarchy/shell.json` keys that control every other idle
 behavior.
 
+### Removal / uninstalling
+
+```bash
+omarchy plugin remove io.github.evol-luci.ascii-screensaver
+```
+
+Because `manifest.json` declares `"omarchy": {"clonedFrom": "omarchy.idle"}`,
+removing (or disabling) the plugin restores Omarchy's built-in idle
+service exactly — no manual cleanup of idle/lock behavior is needed.
+`screensaver-config.json` (or `~/.config/ascii-screensaver/screensaver-config.json`
+if you copied it there) is left in place if you reinstall later; delete
+it yourself if you want a clean slate.
+
+If you installed via the old AUR package instead of as an Omarchy
+plugin, see [Migrating from the old AUR package](#migrating-from-the-old-aur-package)
+for that removal path.
+
 ### Dependencies
 
 This plugin shells out to external tools rather than rendering natively
@@ -522,4 +550,4 @@ The launcher uses `hyprctl dispatch focusmonitor` to direct each window. Monitor
 The JetBrains Mono font loads from Google Fonts on first run. Ensure network access is available when Chromium first opens the animation. After caching it will work offline.
 
 **Chromium errors**
-Chromium stderr is logged to `/tmp/screensaver-chromium-errors.log`. Check this file after a failed launch.
+Chromium stderr is logged to `$XDG_RUNTIME_DIR/ascii-screensaver/chromium-errors.log`. Check this file after a failed launch.
