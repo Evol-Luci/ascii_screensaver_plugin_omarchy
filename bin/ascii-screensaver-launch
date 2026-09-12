@@ -2,6 +2,12 @@
 
 # ASCII Screensaver — Launcher (multi-animation, weighted random)
 #
+# Usage: ascii-screensaver-launch [force] [animation-name]
+#
+# Naming an animation plays exactly that one and skips the usual
+# enabled/weight selection, so the settings panel can preview an animation
+# you are still tuning (possibly disabled, or at weight 0).
+#
 # Reads screensaver-config.json, picks the configured animation, then
 # launches one Chromium kiosk window per monitor in sync. Multi-monitor
 # sequencing mirrors Omarchy's own omarchy-launch-screensaver: open
@@ -28,7 +34,15 @@ else
   CONFIG_FILE="${PLUGIN_ROOT}/screensaver-config.json"
 fi
 
-if [[ ! -f "$CONFIG_FILE" ]] || ! command -v jq &>/dev/null; then
+REQUESTED_ANIMATION="${2:-}"
+
+if [[ -n "$REQUESTED_ANIMATION" ]]; then
+  if [[ ! -f "${PLUGIN_ROOT}/animations/${REQUESTED_ANIMATION}/index.html" ]]; then
+    echo "ascii-screensaver-launch: unknown animation '${REQUESTED_ANIMATION}'" >&2
+    exit 1
+  fi
+  ANIMATION="$REQUESTED_ANIMATION"
+elif [[ ! -f "$CONFIG_FILE" ]] || ! command -v jq &>/dev/null; then
   ANIMATION="terrarium"
 else
   ENABLED=$(jq -r '.enabled // true' "$CONFIG_FILE")

@@ -368,6 +368,8 @@ Item {
               onEnabledToggled: function (value) { root.setAnimationEnabled(root.selection, value) }
               onWeightChanged: function (weight) { root.setAnimationWeight(root.selection, weight) }
               onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
+              onPreviewRequested: Quickshell.execDetached(
+                ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
             }
 
             Item { Layout.preferredHeight: Style.spacing.xl }

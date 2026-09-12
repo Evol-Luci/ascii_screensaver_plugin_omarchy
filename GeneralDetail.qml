@@ -112,7 +112,12 @@ ColumnLayout {
 
   Text {
     Layout.fillWidth: true
-    text: "Runs the screensaver full screen straight away. Move the mouse or press a key to dismiss it."
+    // Deliberately different from the per-animation preview button: this
+    // one exercises the real selection, which is how you check whether
+    // your weighting feels right.
+    text: root.mode === "single"
+      ? "Runs the screensaver full screen, playing the animation chosen above. Move the mouse or press a key to dismiss it."
+      : "Runs the screensaver full screen, picking an animation at random exactly as it would on idle — so run it a few times to check your weights. To preview one specific animation, open it on the left instead."
     color: Color.muted
     font.family: Style.font.family
     font.pixelSize: Style.font.caption

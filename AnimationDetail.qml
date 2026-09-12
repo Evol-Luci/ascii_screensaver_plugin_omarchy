@@ -20,6 +20,7 @@ ColumnLayout {
   signal enabledToggled(bool value)
   signal weightChanged(int weight)
   signal paramEdited(string paramName, var value)
+  signal previewRequested()
 
   spacing: Style.spacing.xl
 
@@ -41,6 +42,25 @@ ColumnLayout {
     font.family: Style.font.family
     font.pixelSize: Style.font.body
     wrapMode: Text.WordWrap
+  }
+
+  RowLayout {
+    Layout.fillWidth: true
+    spacing: Style.spacing.lg
+
+    Button {
+      text: "Preview this animation"
+      onClicked: root.previewRequested()
+    }
+
+    Text {
+      Layout.fillWidth: true
+      text: "Plays full screen with the settings below, even while it is switched off."
+      color: Color.muted
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+      wrapMode: Text.WordWrap
+    }
   }
 
   Toggle {
