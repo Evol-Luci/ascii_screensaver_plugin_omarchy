@@ -53,30 +53,11 @@ under `animations/` are plain, dependency-free HTML/JS, unchanged by this
 plugin migration.
 ## Configuration
 
-The **recommended** way to configure this plugin is the native settings
-panel described in [Configuring animations](#configuring-animations)
-below — it runs inside the Omarchy shell itself, needs nothing extra
-running, and covers every animation's parameters.
-
-### Legacy browser-based config UI (fallback, not recommended)
-
-```bash
-./ascii-screensaver-config
-```
-
-This launches `legacy/screensaver-config-server.py`, a small local HTTP
-server (bound to `127.0.0.1`) that serves a browser UI with the same
-controls as the native panel — enable/disable, launch mode, per-animation
-weights/params, and a live preview. It predates the native panel and is
-kept only as a fallback for older setups; its `/api/config` endpoint has
-no authentication, so prefer the native panel unless you have a specific
-reason to use this instead. Opens a browser-based UI with:
-- Global enable/disable toggle
-- Launch mode: weighted random or always-use-one
-- Per-animation enable/disable and weight sliders
-- All animation params as sliders and dropdowns
-- Live preview iframe with fullscreen option
-- Save writes directly to `screensaver-config.json`
+Configure this plugin through the native settings panel described in
+[Configuring animations](#configuring-animations) below — it runs inside
+the Omarchy shell itself, needs nothing extra running, and covers every
+animation's parameters: global enable/disable, launch mode, per-animation
+enable/disable and weight, every animation's params, and a live preview.
 
 ### Manual JSON editing
 

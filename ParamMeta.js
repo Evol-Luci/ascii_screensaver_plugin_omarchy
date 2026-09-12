@@ -2,9 +2,9 @@
 // formatting, and a one-line description per parameter.
 //
 // This is deliberately NOT part of params.schema.json. That file is a
-// mechanical extraction of the DEFINITIONS object in
-// legacy/screensaver-config-ui.html and can be regenerated at any time;
-// hand-written copy living there would be lost on the next regeneration.
+// mechanical extraction of each animation's parameter definitions and
+// can be regenerated at any time; hand-written copy living there would
+// be lost on the next regeneration.
 
 // Descriptions are keyed by parameter name, since names are reused across
 // animations (`speed` appears in 27 of them). Where a name genuinely means
@@ -157,8 +157,7 @@ var OVERRIDES = {
   }
 };
 
-// "leafDensity" -> "Leaf Density". Mirrors formatLabel() in the legacy
-// HTML UI so labels stay identical to what users saw there.
+// "leafDensity" -> "Leaf Density".
 function formatLabel(key) {
   var name = String(key === null || key === undefined ? "" : key);
   if (!name) return "";

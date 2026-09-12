@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# ASCII Screensaver — unified config UI launcher (legacy HTML/Python UI,
-# kept as a fallback until the native QML settings panel — Phase B —
-# reaches parity).
-
-PLUGIN_ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
-exec python3 "${PLUGIN_ROOT}/legacy/screensaver-config-server.py"
