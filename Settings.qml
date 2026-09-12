@@ -30,8 +30,17 @@ Item {
   readonly property var animationNames: Object.keys(root.schema)
   readonly property bool randomMode: root.persistedConfig.mode !== "single"
 
+  // A payload of {"select": "bonsai"} opens straight to that animation,
+  // or {"select": "general"} to the shared settings, so a keybinding can
+  // deep-link to one page instead of always landing on the welcome pane.
   function open(payloadJson) {
     closingFromHost = false
+    try {
+      var payload = JSON.parse(payloadJson || "{}")
+      if (payload && typeof payload.select === "string") root.selection = payload.select
+    } catch (e) {
+      // A malformed payload just means the default welcome pane.
+    }
     window.visible = true
   }
 
@@ -298,6 +307,7 @@ Item {
 
             WelcomePane {
               Layout.fillWidth: true
+              Layout.maximumWidth: Style.space(680)
               Layout.leftMargin: Style.spacing.xl
               Layout.rightMargin: Style.spacing.xl
               visible: root.selection === ""
@@ -308,6 +318,7 @@ Item {
 
             GeneralDetail {
               Layout.fillWidth: true
+              Layout.maximumWidth: Style.space(680)
               Layout.leftMargin: Style.spacing.xl
               Layout.rightMargin: Style.spacing.xl
               visible: root.selection === "general"
@@ -345,6 +356,7 @@ Item {
 
             AnimationDetail {
               Layout.fillWidth: true
+              Layout.maximumWidth: Style.space(680)
               Layout.leftMargin: Style.spacing.xl
               Layout.rightMargin: Style.spacing.xl
               visible: root.selection !== "" && root.selection !== "general"
