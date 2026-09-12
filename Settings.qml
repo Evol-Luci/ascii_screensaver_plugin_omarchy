@@ -324,11 +324,11 @@ Item {
                 root.persistedConfig.enabled = value
                 root.commit()
               }
-              onModeChanged: function (value) {
+              onModeSelected: function (value) {
                 root.persistedConfig.mode = value
                 root.commit()
               }
-              onSelectedAnimationChanged: function (value) {
+              onAnimationSelected: function (value) {
                 root.persistedConfig.selectedAnimation = value
                 root.commit()
               }

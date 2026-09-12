@@ -16,9 +16,12 @@ ColumnLayout {
   property int screensaverDelaySeconds: 150
   property int lockDelaySeconds: 300
 
+  // Deliberately not named modeChanged/selectedAnimationChanged: QML
+  // already generates those for the properties above, and redeclaring
+  // them makes the whole component fail to load.
   signal enabledToggled(bool value)
-  signal modeChanged(string value)
-  signal selectedAnimationChanged(string value)
+  signal modeSelected(string value)
+  signal animationSelected(string value)
   signal screensaverDelayChanged(int seconds)
   signal lockDelayChanged(int seconds)
   signal previewRequested()
@@ -47,7 +50,7 @@ ColumnLayout {
     description: "Random picks a different enabled animation each time, weighted per animation. Single always plays the same one."
     value: root.mode
     options: ["random", "single"]
-    onChanged: function (v) { root.modeChanged(v) }
+    onChanged: function (v) { root.modeSelected(v) }
   }
 
   LabeledDropdown {
@@ -57,7 +60,7 @@ ColumnLayout {
     description: "The animation shown every time the screensaver starts."
     value: root.selectedAnimation
     options: root.animationOptions
-    onChanged: function (v) { root.selectedAnimationChanged(v) }
+    onChanged: function (v) { root.animationSelected(v) }
   }
 
   PanelSeparator { Layout.fillWidth: true }
