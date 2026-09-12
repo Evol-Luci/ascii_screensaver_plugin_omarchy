@@ -480,6 +480,14 @@ live with the system menu, no shell restart needed):
 
 That nests it under Setup (aliased `settings`) in the root menu. Bind it
 to a Hyprland keybinding instead if you'd rather skip the menu entirely.
+
+The panel opens on a welcome page listing what's enabled. Pass a `select`
+payload to jump straight to a page — `'{"select":"general"}'` for the
+timing and launch-mode settings, or any animation name:
+
+```bash
+omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{"select":"bonsai"}'
+```
 If you have the third-party Barkeep plugin installed, it can also summon
 this panel directly — but the `omarchy-shell summon`/menu-extension route
 above works without it.
