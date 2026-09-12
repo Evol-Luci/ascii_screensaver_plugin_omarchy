@@ -30,9 +30,12 @@ and are removed as of this version. This project is now distributed as an
 ## If you cloned the repo and ran `install.sh` manually
 
 1. Undo whatever `install.sh` symlinked onto your `PATH` (check
-   `~/.local/bin/ascii-screensaver-*`) and remove them.
-2. Remove any `hypridle.conf` listener you added by hand (see above).
-3. Install the plugin the same way:
+   `~/.local/bin/ascii-screensaver-*`) and remove them, along with the
+   `~/.local/share/ascii-screensaver/` directory they point into.
+2. Remove the stale app-menu entry it installed:
+   `~/.local/share/applications/ascii-screensaver-config.desktop`.
+3. Remove any `hypridle.conf` listener you added by hand (see above).
+4. Install the plugin the same way:
    ```bash
    omarchy plugin add https://github.com/Evol-Luci/ascii-screensaver.git --enable
    ```
@@ -44,8 +47,10 @@ and are removed as of this version. This project is now distributed as an
   `~/.config/omarchy/shell.json`'s `idle.screensaver` / `idle.lock` keys.
 - Per-animation parameters still live at
   `~/.config/ascii-screensaver/screensaver-config.json`, unchanged.
-- The visual config UI still works the same way, launched via
-  `omarchy-shell shell summon` or manually:
+- Configuration now happens through a native settings panel instead of
+  the old HTML UI, launched via:
   ```bash
-  ~/.config/omarchy/plugins/io.github.evol-luci.ascii-screensaver/bin/ascii-screensaver-config
+  omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'
   ```
+  See the README's "Configuring animations" section for adding this as
+  an Omarchy menu shortcut.
