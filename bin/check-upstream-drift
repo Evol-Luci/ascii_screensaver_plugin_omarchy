@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Diffs our cloned idle Service.qml against the currently-installed
+# omarchy.idle Service.qml. Expected diff is exactly the pluginDir property
+# and the launchScreensaver() body (see Task 3 of the migration plan) — a
+# larger diff means an Omarchy update changed idle/lock semantics and this
+# clone needs review before it's trusted again.
+#
+# Exit codes: 0 = diff within expected bounds, 1 = drift detected,
+# 2 = upstream Service.qml not found.
+
+set -uo pipefail
+
+PLUGIN_ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+UPSTREAM="${OMARCHY_PATH:-/usr/share/omarchy}/shell/plugins/services/idle/Service.qml"
+OURS="${PLUGIN_ROOT}/Service.qml"
+EXPECTED_CHANGED_LINES=8
+
+if [[ ! -f "$UPSTREAM" ]]; then
+  echo "check-upstream-drift: upstream Service.qml not found at $UPSTREAM (Omarchy moved or renamed it)" >&2
+  exit 2
+fi
+
+diff_output=$(diff -u "$UPSTREAM" "$OURS" || true)
+changed_lines=$(printf '%s\n' "$diff_output" | grep -cE '^[+-][^+-]')
+
+echo "$diff_output"
+echo
+echo "check-upstream-drift: ${changed_lines} changed line(s) (expected ~${EXPECTED_CHANGED_LINES})"
+
+if (( changed_lines > EXPECTED_CHANGED_LINES )); then
+  echo "check-upstream-drift: WARNING — omarchy.idle has drifted further than expected; review Service.qml against \$UPSTREAM before relying on this clone" >&2
+  exit 1
+fi
+
+echo "check-upstream-drift: OK — diff matches the expected intentional override"
+exit 0

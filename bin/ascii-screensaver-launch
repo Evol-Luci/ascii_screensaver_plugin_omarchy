@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# ASCII Screensaver — Launcher (multi-animation, weighted random)
+#
+# Reads screensaver-config.json, picks the configured animation, then
+# launches one Chromium kiosk window per monitor in sync. Multi-monitor
+# sequencing mirrors Omarchy's own omarchy-launch-screensaver: open
+# Hyprland's event socket before spawning anything, then block per-monitor
+# on that monitor's openwindow event (class org.omarchy.screensaver) before
+# moving focus on — so a slow-starting window can't pile onto whichever
+# monitor was last focused.
+
+set -uo pipefail
+
+# Exit early if screensaver is already running
+pgrep -f "animations/.*/index.html" > /dev/null 2>&1 && exit 0
+pgrep -x "ascii-screensaver-cmd" > /dev/null 2>&1 && exit 0
+
+if [[ -f ~/.local/state/omarchy/toggles/screensaver-off ]] && [[ ${1:-} != "force" ]]; then
+  exit 1
+fi
+
+PLUGIN_ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+USER_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/ascii-screensaver/screensaver-config.json"
+if [[ -f "$USER_CONFIG_FILE" ]]; then
+  CONFIG_FILE="$USER_CONFIG_FILE"
+else
+  CONFIG_FILE="${PLUGIN_ROOT}/screensaver-config.json"
+fi
+
+if [[ ! -f "$CONFIG_FILE" ]] || ! command -v jq &>/dev/null; then
+  ANIMATION="terrarium"
+else
+  ENABLED=$(jq -r '.enabled // true' "$CONFIG_FILE")
+  if [[ "$ENABLED" == "false" && ${1:-} != "force" ]]; then
+    exit 0
+  fi
+
+  MODE=$(jq -r '.mode // "random"' "$CONFIG_FILE")
+  if [[ "$MODE" == "single" ]]; then
+    ANIMATION=$(jq -r '.selectedAnimation // "terrarium"' "$CONFIG_FILE")
+  else
+    mapfile -t ROWS < <(jq -r '
+      .animations[]
+      | select((.enabled // true) and ((.weight // 0) > 0))
+      | [.name, (.weight | floor)]
+      | @tsv
+    ' "$CONFIG_FILE")
+
+    if [[ ${#ROWS[@]} -eq 0 ]]; then
+      ANIMATION="terrarium"
+    else
+      TOTAL=0
+      for row in "${ROWS[@]}"; do
+        weight="${row##*$'\t'}"
+        TOTAL=$((TOTAL + weight))
+      done
+
+      ROLL=$((RANDOM % TOTAL))
+      CUM=0
+      ANIMATION="terrarium"
+      for row in "${ROWS[@]}"; do
+        name="${row%%$'\t'*}"
+        weight="${row##*$'\t'}"
+        CUM=$((CUM + weight))
+        if [[ $ROLL -lt $CUM ]]; then
+          ANIMATION="$name"
+          break
+        fi
+      done
+    fi
+  fi
+
+  if [[ ! -f "${PLUGIN_ROOT}/animations/${ANIMATION}/index.html" ]]; then
+    ANIMATION="terrarium"
+  fi
+fi
+
+walker -q 2>/dev/null
+CMD="${PLUGIN_ROOT}/bin/ascii-screensaver-cmd"
+SCREENSAVER_CLASS="org.omarchy.screensaver"
+
+hypr_focus_monitor() {
+  hyprctl dispatch "hl.dsp.focus({ monitor = \"$1\" })" >/dev/null 2>&1 \
+    || hyprctl dispatch focusmonitor "$1" >/dev/null
+}
+
+hypr_exec() {
+  local command
+  printf -v command '%q ' "$@"
+  hyprctl dispatch "hl.dsp.exec_cmd([[$command]])" >/dev/null 2>&1 \
+    || hyprctl dispatch exec -- bash -lc "$command" >/dev/null
+}
+
+focused=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true).name')
+
+abort_screensaver() {
+  pkill -f "ascii-screensaver-cmd" 2>/dev/null || true
+  pkill -f "animations/.*/index.html" 2>/dev/null || true
+  hyprctl eval 'hl.config({ cursor = { invisible = false } })' &>/dev/null \
+    || hyprctl keyword cursor:invisible false &>/dev/null || true
+  [[ -n "${focused:-}" ]] && hypr_focus_monitor "$focused"
+  exit 0
+}
+trap abort_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
+
+SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+
+# Open Hyprland's event stream before spawning anything, so a window that
+# maps quickly can't emit its openwindow event before we are listening.
+exec {events}< <(socat -U - "UNIX-CONNECT:$SOCKET")
+
+# hypr_exec is async and a new window maps on whatever monitor is focused at
+# that moment. Block until this monitor's screensaver window actually opens
+# before moving focus on — otherwise slow-starting windows all pile onto
+# the last monitor. The deadline is a safety net if the window never
+# appears at all.
+wait_for_screensaver_window() {
+  local line deadline=$((SECONDS + 5))
+  while ((SECONDS < deadline)) && IFS= read -r -t $((deadline - SECONDS)) -u "$events" line; do
+    [[ $line == openwindow\>\>*,"$SCREENSAVER_CLASS",* ]] && return 0
+  done
+}
+
+start_at=$(( $(date +%s%3N) + 12000 ))
+
+for m in $(hyprctl monitors -j | jq -r '.[] | .name'); do
+  hypr_focus_monitor "$m"
+  hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" bash "$CMD"
+  wait_for_screensaver_window
+done
+
+hypr_focus_monitor "$focused"

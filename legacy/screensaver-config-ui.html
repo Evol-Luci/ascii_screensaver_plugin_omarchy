@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASCII Screensaver Config</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050609;
+      --panel: rgba(9, 11, 22, 0.97);
+      --panel-2: rgba(13, 16, 30, 0.94);
+      --line: rgba(79, 231, 255, 0.11);
+      --line-hot: rgba(255, 107, 214, 0.45);
+      --text: #cdd5f0;
+      --muted: #434d72;
+      --cyan: #4fe7ff;
+      --magenta: #ff6bd6;
+      --amber: #ffc857;
+      --green: #77f0a0;
+      --danger: #ff6b7a;
+      --anim-color: var(--cyan);
+      --grid-size: 32px;
+    }
+
+    /* per-animation accent colors */
+    body[data-anim="bonsai"]    { --anim-color: #77f0a0; }
+    body[data-anim="moon"]      { --anim-color: #8eb6ff; }
+    body[data-anim="crawl"]     { --anim-color: #ffc857; }
+    body[data-anim="blackhole"] { --anim-color: #ff8c42; }
+    body[data-anim="aurora"]      { --anim-color: #40e070; }
+    body[data-anim="mandelbrot"]  { --anim-color: #cc60ff; }
+    body[data-anim="pipes"]       { --anim-color: #40a0e0; }
+    body[data-anim="fluid"]       { --anim-color: #40a0d0; }
+    body[data-anim="thunderstorm"]{ --anim-color: #a090d0; }
+    body[data-anim="incense"]   { --anim-color: #d4a040; }
+    body[data-anim="campfire"]  { --anim-color: #f07020; }
+    body[data-anim="planet"]    { --anim-color: #40a0d0; }
+    body[data-anim="boids"]     { --anim-color: #88c0ff; }
+    body[data-anim="windchimes"]{ --anim-color: #c89850; }
+    body[data-anim="vinyl"]     { --anim-color: #8a1a1a; }
+    body[data-anim="waterfall"] { --anim-color: #50b0d0; }
+    body[data-anim="jellyfish"] { --anim-color: #50c0d0; }
+    body[data-anim="terrarium"] { --anim-color: #40c080; }
+    body[data-anim="aquarium"]  { --anim-color: #40b0e0; }
+    body[data-anim="spiderweb"] { --anim-color: #a8b8d0; }
+    body[data-anim="volcano"]   { --anim-color: #f06020; }
+    body[data-anim="oscilloscope"] { --anim-color: #60ff8c; }
+    body[data-anim="pendulum_wave"] { --anim-color: #c8a0ff; }
+    body[data-anim="glitch_field"] { --anim-color: #40ff80; }
+    body[data-anim="cyber_deck"] { --anim-color: #ffb000; }
+    body[data-anim="attractor"] { --anim-color: #7fd4ff; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg);
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      overflow-x: hidden;
+    }
+
+    button, input, select { font: inherit; }
+
+    /* ── animated grid ── */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(79, 231, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 231, 255, 0.035) 1px, transparent 1px);
+      background-size: var(--grid-size) var(--grid-size);
+      animation: gridScroll 50s linear infinite;
+    }
+
+    @keyframes gridScroll {
+      from { background-position: 0 0; }
+      to   { background-position: var(--grid-size) var(--grid-size); }
+    }
+
+    /* ── ambient glow blobs ── */
+    .bg-glows {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glows::before {
+      content: '';
+      position: absolute;
+      top: -15%;
+      right: -5%;
+      width: 55%;
+      height: 55%;
+      background: radial-gradient(ellipse, rgba(255, 200, 87, 0.07) 0%, transparent 70%);
+      animation: blob1 22s ease-in-out infinite;
+    }
+
+    .bg-glows::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: -10%;
+      width: 50%;
+      height: 50%;
+      background: radial-gradient(ellipse, rgba(79, 231, 255, 0.06) 0%, transparent 70%);
+      animation: blob2 28s ease-in-out infinite;
+    }
+
+    @keyframes blob1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(-4%, 7%) scale(1.08); }
+      66%  { transform: translate(4%, -3%) scale(0.92); }
+    }
+
+    @keyframes blob2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(7%, -4%) scale(0.92); }
+      66%  { transform: translate(-3%, 6%) scale(1.08); }
+    }
+
+    /* ── scanlines ── */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.06) 3px,
+        rgba(0, 0, 0, 0.06) 4px
+      );
+    }
+
+    /* ── layout ── */
+    .shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(300px, 400px) minmax(440px, 1fr);
+      min-height: 100vh;
+    }
+
+    /* ── sidebar ── */
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(5, 7, 14, 0.92);
+      backdrop-filter: blur(10px);
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line) transparent;
+      animation: slideInLeft 0.45s ease-out both;
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── brand ── */
+    .brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--cyan);
+      position: relative;
+      display: inline-block;
+    }
+
+    /* glitch layers */
+    h1::before, h1::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--cyan);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    h1::before {
+      text-shadow: 2px 0 var(--magenta);
+      animation: glitchA 11s infinite;
+    }
+
+    h1::after {
+      text-shadow: -2px 0 var(--amber);
+      animation: glitchB 11s infinite;
+    }
+
+    @keyframes glitchA {
+      0%, 87%, 100% { opacity: 0; }
+      88% { opacity: 0.85; clip-path: polygon(0 10%, 100% 10%, 100% 44%, 0 44%); transform: translate(-3px, 1px); }
+      88.5% { opacity: 0; }
+      89% { opacity: 0.85; clip-path: polygon(0 60%, 100% 60%, 100% 88%, 0 88%); transform: translate(2px, -1px); }
+      89.5% { opacity: 0; }
+      90% { opacity: 0.85; clip-path: polygon(0 28%, 100% 28%, 100% 58%, 0 58%); transform: translate(-1px, 2px); }
+      90.5% { opacity: 0; }
+    }
+
+    @keyframes glitchB {
+      0%, 87%, 100% { opacity: 0; }
+      88.2% { opacity: 0.7; clip-path: polygon(0 50%, 100% 50%, 100% 80%, 0 80%); transform: translate(3px, -1px); }
+      88.8% { opacity: 0; }
+      89.7% { opacity: 0.7; clip-path: polygon(0 5%, 100% 5%, 100% 32%, 0 32%); transform: translate(-2px, 1px); }
+      90.2% { opacity: 0; }
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 7px;
+      height: 10px;
+      background: var(--muted);
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: cursorBlink 1.1s step-end infinite;
+    }
+
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* ── save indicator ── */
+    .save-light {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--green);
+      font-size: 10px;
+      white-space: nowrap;
+      padding: 4px 10px;
+      border: 1px solid rgba(119, 240, 160, 0.25);
+      border-radius: 999px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+    }
+
+    .save-light::before {
+      content: '';
+      display: block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .save-light.dirty {
+      color: var(--amber);
+      border-color: rgba(255, 200, 87, 0.35);
+      animation: savePulse 1.8s ease-in-out infinite;
+    }
+
+    .save-light.dirty::before {
+      background: var(--amber);
+      box-shadow: 0 0 7px var(--amber);
+    }
+
+    @keyframes savePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 200, 87, 0); }
+      50%       { box-shadow: 0 0 0 5px rgba(255, 200, 87, 0.12); }
+    }
+
+    /* ── panels ── */
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 14px;
+      position: relative;
+    }
+
+    .panel::before, .panel::after {
+      content: '';
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-color: var(--anim-color);
+      border-style: solid;
+      opacity: 0.45;
+      transition: opacity 0.5s, border-color 0.5s;
+    }
+
+    .panel::before {
+      top: -1px; left: -1px;
+      border-width: 2px 0 0 2px;
+      border-radius: 3px 0 0 0;
+    }
+
+    .panel::after {
+      bottom: -1px; right: -1px;
+      border-width: 0 2px 2px 0;
+      border-radius: 0 0 3px 0;
+    }
+
+    .system-panel {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+
+    .panel-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      background: rgba(5, 7, 16, 0.9);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 8px 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    select:hover, input[type="number"]:hover { border-color: rgba(79, 231, 255, 0.25); }
+
+    .filter-input {
+      width: 100%;
+      background: rgba(5, 7, 16, 0.9);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .filter-input::placeholder { color: var(--muted); }
+
+    .anim-controls {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+      margin-bottom: 10px;
+    }
+
+    .anim-controls .filter-input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .sort-toggle {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      border-color: var(--line);
+      background: rgba(5, 7, 16, 0.9);
+      color: var(--muted);
+      padding: 8px 11px;
+    }
+
+    .sort-toggle:hover {
+      border-color: rgba(79, 231, 255, 0.4);
+      background: rgba(79, 231, 255, 0.08);
+      color: var(--cyan);
+      box-shadow: none;
+      transform: none;
+    }
+
+    .sort-arrow {
+      color: var(--cyan);
+      font-size: 10px;
+    }
+
+    .filter-input:focus-visible {
+      outline: none;
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px rgba(79, 231, 255, 0.15);
+    }
+
+    select:focus-visible, input:focus-visible {
+      outline: none;
+      border-color: var(--anim-color);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--anim-color) 15%, transparent);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--anim-color);
+      cursor: pointer;
+    }
+
+    .toggle-row, .range-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--cyan);
+      cursor: pointer;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    /* ── animation panel (combined select + weights) ── */
+    .anim-panel {
+      display: grid;
+      gap: 6px;
+    }
+
+    .anim-row {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 6px;
+      padding: 10px 12px 9px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .anim-row::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--muted);
+      transition: background 0.25s, box-shadow 0.25s;
+      border-radius: 0 2px 2px 0;
+    }
+
+    .anim-row:hover {
+      border-color: rgba(79, 231, 255, 0.28);
+      background: rgba(18, 22, 44, 0.98);
+    }
+
+    .anim-row:hover::before {
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .anim-row.active {
+      border-color: var(--anim-color);
+      background: rgba(16, 20, 42, 0.98);
+      animation: activePulse 2.8s ease-in-out infinite;
+    }
+
+    .anim-row.active::before {
+      background: var(--anim-color);
+      box-shadow: 0 0 10px var(--anim-color);
+    }
+
+    @keyframes activePulse {
+      0%, 100% { box-shadow: 0 0 0 0 transparent; }
+      50%       { box-shadow: 0 0 8px 1px color-mix(in srgb, var(--anim-color) 18%, transparent); }
+    }
+
+    .anim-row-header {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .animation-name {
+      color: var(--text);
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .animation-meta {
+      color: var(--muted);
+      font-size: 10px;
+      flex: 1;
+    }
+
+    .weight-value {
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 600;
+      min-width: 14px;
+      text-align: right;
+    }
+
+    .anim-row-slider {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* stop the slider click from triggering row selection */
+    .anim-row-slider input { cursor: pointer; }
+
+    /* ── main ── */
+    main {
+      padding: 22px;
+      display: grid;
+      grid-template-rows: minmax(280px, 42vh) 1fr;
+      gap: 18px;
+      min-width: 0;
+      animation: fadeUp 0.5s 0.08s ease-out both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── preview panel ── */
+    .preview-panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      position: relative;
+      transition: border-color 0.5s;
+    }
+
+    /* animated corner gradient border */
+    .preview-panel::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 9px;
+      background: linear-gradient(135deg,
+        color-mix(in srgb, var(--anim-color) 60%, transparent) 0%,
+        transparent 35%,
+        transparent 65%,
+        color-mix(in srgb, var(--magenta) 40%, transparent) 100%
+      ) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      pointer-events: none;
+      transition: background 0.5s;
+    }
+
+    .preview-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5, 7, 14, 0.98);
+    }
+
+    .preview-title {
+      color: var(--anim-color);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: color 0.4s;
+    }
+
+    .preview-params-text {
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 420px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    /* ── editor panel ── */
+    .editor-panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      position: relative;
+      transition: border-color 0.5s;
+    }
+
+    .editor-panel::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 9px;
+      background: linear-gradient(225deg,
+        color-mix(in srgb, var(--anim-color) 40%, transparent) 0%,
+        transparent 40%
+      ) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      pointer-events: none;
+      transition: background 0.5s;
+    }
+
+    .editor-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+    }
+
+    h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--anim-color);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: color 0.4s;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      margin-top: 6px;
+    }
+
+    .param-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(160px, 1fr));
+      gap: 14px;
+    }
+
+    .field { min-width: 0; }
+
+    .field-value {
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 600;
+      min-width: 48px;
+      text-align: right;
+      transition: color 0.15s;
+    }
+
+    /* ── buttons ── */
+    button {
+      border: 1px solid var(--line-hot);
+      background: rgba(255, 107, 214, 0.07);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: background 0.18s, border-color 0.18s, transform 0.12s, box-shadow 0.18s;
+    }
+
+    button:hover {
+      border-color: var(--magenta);
+      background: rgba(255, 107, 214, 0.16);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(255, 107, 214, 0.18);
+    }
+
+    button:active { transform: translateY(0); }
+
+    button:focus-visible {
+      outline: 2px solid var(--anim-color);
+      outline-offset: 2px;
+    }
+
+    .primary {
+      border-color: rgba(79, 231, 255, 0.45);
+      background: rgba(79, 231, 255, 0.09);
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .primary:hover {
+      border-color: var(--cyan);
+      background: rgba(79, 231, 255, 0.18);
+      box-shadow: 0 4px 18px rgba(79, 231, 255, 0.22);
+    }
+
+    .primary.flash-save {
+      animation: saveFlash 0.7s ease-out forwards;
+    }
+
+    @keyframes saveFlash {
+      0%   { background: rgba(79, 231, 255, 0.09); border-color: rgba(79, 231, 255, 0.45); color: var(--cyan); }
+      25%  { background: rgba(119, 240, 160, 0.35); border-color: var(--green); color: var(--green); box-shadow: 0 0 20px rgba(119, 240, 160, 0.35); }
+      100% { background: rgba(79, 231, 255, 0.09); border-color: rgba(79, 231, 255, 0.45); color: var(--cyan); }
+    }
+
+    .danger {
+      border-color: rgba(255, 107, 122, 0.35);
+      color: var(--danger);
+      background: rgba(255, 107, 122, 0.06);
+    }
+
+    .danger:hover {
+      border-color: var(--danger);
+      background: rgba(255, 107, 122, 0.16);
+      box-shadow: 0 4px 14px rgba(255, 107, 122, 0.18);
+    }
+
+    /* ── actions & message ── */
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .message {
+      min-height: 18px;
+      font-size: 11px;
+      color: var(--green);
+      padding-left: 10px;
+      border-left: 2px solid var(--green);
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .message:empty { border-color: transparent; }
+
+    .message.error {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .message.animate-in {
+      animation: msgIn 0.3s ease-out both;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── fullscreen ── */
+    .fullscreen-preview {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      background: #000;
+    }
+
+    .fullscreen-preview.open { display: block; }
+
+    .fullscreen-preview iframe {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .fullscreen-toolbar {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 51;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(5, 7, 14, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    /* ── responsive ── */
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      main { grid-template-rows: 320px auto; }
+      .param-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glows"></div>
+  <div class="scanlines"></div>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div>
+          <h1 data-text="ASCII Screensaver">ASCII Screensaver</h1>
+          <div class="brand-sub">Choose the animation sequence and tune the params read by the Omarchy launcher.<span class="cursor-blink"></span></div>
+        </div>
+        <div class="save-light" id="saveLight">Saved</div>
+      </div>
+
+      <section class="panel system-panel">
+        <div class="panel-label">System</div>
+        <div class="toggle-row">
+          <div>
+            <label for="enabled">Screensaver enabled</label>
+            <div class="status">When off, idle launches exit without opening Chromium.</div>
+          </div>
+          <input type="checkbox" id="enabled">
+        </div>
+        <div>
+          <label for="mode">Launch mode</label>
+          <select id="mode">
+            <option value="random">Weighted random</option>
+            <option value="single">Always use selected</option>
+          </select>
+        </div>
+        <div>
+          <label for="selectedAnimation">Selected animation</label>
+          <select id="selectedAnimation"></select>
+        </div>
+      </section>
+
+      <div class="anim-controls">
+        <input type="text" id="animationFilter" placeholder="Filter animations…" aria-label="Filter animations" class="filter-input">
+        <button type="button" id="weightSortToggle" class="sort-toggle" title="Sorting highest weight first — click for lowest first">
+          <span class="sort-arrow" id="sortArrow">▼</span><span id="sortLabel">High</span>
+        </button>
+      </div>
+      <section class="panel anim-panel" id="animationList"></section>
+    </aside>
+
+    <main>
+      <section class="preview-panel">
+        <div class="preview-bar">
+          <div>
+            <div class="preview-title" id="previewTitle">Preview</div>
+            <div class="preview-params-text" id="previewParams"></div>
+          </div>
+          <div class="actions">
+            <button id="refreshPreview">Refresh</button>
+            <button class="primary" id="openFullscreen">Fullscreen</button>
+          </div>
+        </div>
+        <iframe id="previewFrame" title="Animation preview"></iframe>
+      </section>
+
+      <section class="editor-panel">
+        <div class="editor-head">
+          <div>
+            <h2 id="editorTitle">Animation</h2>
+            <div class="hint" id="editorHint"></div>
+            <div class="status" id="editorPreviewNote">Changes preview instantly below. Click <strong>Save active config</strong> to make them take effect in the real screensaver.</div>
+          </div>
+          <div class="toggle-row">
+            <label for="animationEnabled">Enabled</label>
+            <input type="checkbox" id="animationEnabled">
+          </div>
+        </div>
+        <div class="field">
+          <label for="weight" title="Same value as the slider next to this animation in the sidebar list">Random weight</label>
+          <div class="range-row">
+            <input type="range" id="weight" min="0" max="10" step="1">
+            <span class="field-value" id="weightValue"></span>
+          </div>
+        </div>
+        <div class="param-grid" id="paramGrid"></div>
+        <div class="actions">
+          <button class="primary" id="saveConfig">Save active config</button>
+          <button id="exportConfig">Download backup</button>
+          <button class="danger" id="resetConfig">Reset defaults</button>
+        </div>
+        <div class="message" id="message"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="fullscreen-preview" id="fullscreenPreview">
+    <div class="fullscreen-toolbar">
+      <span class="preview-title" id="fullscreenTitle">Preview</span>
+      <button id="closeFullscreen">Close</button>
+    </div>
+    <iframe id="fullscreenFrame" title="Fullscreen animation preview"></iframe>
+  </div>
+
+  <script>
+    const DEFINITIONS = {
+      bonsai: {
+        title: 'Bonsai',
+        hint: 'Procedural tree growth with leaf density and rest time between redraws.',
+        params: {
+          speed: { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette: { type: 'select', value: 'natural', options: ['natural', 'autumn', 'sakura', 'cherry', 'purple', 'mono'] },
+          leafDensity: { type: 'range', min: 0.2, max: 2, step: 0.05, value: 1.0 },
+          holdTime: { type: 'range', min: 60, max: 900, step: 30, value: 360 }
+        }
+      },
+      moon: {
+        title: 'Moon',
+        hint: 'Orbital ASCII scene with star count, floaters, glow, and palette.',
+        params: {
+          speed: { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette: { type: 'select', value: 'silver', options: ['silver', 'gold', 'blood', 'blue', 'green'] },
+          stars: { type: 'range', min: 0, max: 300, step: 10, value: 120 },
+          floaterFreq: { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 },
+          glowIntensity: { type: 'range', min: 0, max: 2, step: 0.05, value: 1.0 }
+        }
+      },
+      crawl: {
+        title: 'Crawl',
+        hint: 'Retro title crawl with selectable episode and text speed.',
+        params: {
+          speed: { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette: { type: 'select', value: 'gold', options: ['gold', 'white', 'green', 'blue', 'red'] },
+          episode: { type: 'range', min: -1, max: 5, step: 1, value: -1 }
+        }
+      },
+      blackhole: {
+        title: 'Black Hole',
+        hint: 'Accretion disk animation with jet toggle, disk size, and inclination.',
+        params: {
+          speed: { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette: { type: 'select', value: 'fire', options: ['fire', 'cool', 'plasma', 'mono'] },
+          diskSize: { type: 'range', min: 0.4, max: 2, step: 0.05, value: 1.0 },
+          jets: { type: 'select', value: 1, options: [0, 1] },
+          inclination: { type: 'range', min: 0, max: 1, step: 0.01, value: 0.36 }
+        }
+      },
+      nixie: {
+        title: 'Nixie',
+        hint: 'Vintage nixie tube clock with cathode poisoning, neon glow bloom, and per-tube flicker. Inspired by joeparadiso/nixie-tube-clock.',
+        params: {
+          glowColor:        { type: 'select', value: 'amber', options: ['amber', 'red', 'green', 'blue', 'white', 'purple'] },
+          flickerIntensity: { type: 'range',  min: 0,   max: 2,   step: 0.1, value: 1.0 },
+          poisoningSpeed:   { type: 'range',  min: 0.5, max: 4,   step: 0.1, value: 1.5 },
+          showSeconds:      { type: 'select', value: 1, options: [0, 1] },
+          tubeStyle:        { type: 'select', value: 'classic', options: ['classic', 'slim', 'wide'] },
+          tubeColons:       { type: 'select', value: 0, options: [0, 1] },
+        }
+      },
+      aurora: {
+        title: 'Aurora',
+        hint: 'Procedural aurora borealis ribbons with twinkling star field.',
+        params: {
+          speed:      { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:    { type: 'select', value: 'aurora', options: ['aurora', 'northern', 'southern', 'neon', 'mono'] },
+          bands:      { type: 'range', min: 1, max: 5, step: 1, value: 3 },
+          brightness: { type: 'range', min: 0.2, max: 2, step: 0.05, value: 1.0 },
+          stars:      { type: 'range', min: 0, max: 400, step: 10, value: 150 }
+        }
+      },
+      mandelbrot: {
+        title: 'Mandelbrot',
+        hint: 'Zooming ASCII fractal with auto-jumping boundary regions.',
+        params: {
+          speed:    { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:  { type: 'select', value: 'classic', options: ['classic', 'fire', 'ocean', 'neon', 'mono'] },
+          maxIter:  { type: 'range', min: 16, max: 256, step: 16, value: 64 },
+          charset:  { type: 'select', value: 'classic', options: ['classic', 'blocks', 'dots'] },
+          autoJump: { type: 'select', value: 1, options: [0, 1] }
+        }
+      },
+      pipes: {
+        title: 'Pipes',
+        hint: 'Growing pipe network using Unicode box-drawing characters.',
+        params: {
+          speed:     { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:   { type: 'select', value: 'blue', options: ['blue', 'green', 'amber', 'neon', 'mono'] },
+          density:   { type: 'range', min: 1, max: 12, step: 1, value: 6 },
+          fading:    { type: 'select', value: 1, options: [0, 1] },
+          spawnRate:  { type: 'range', min: 0.2, max: 3, step: 0.1, value: 1.0 }
+        }
+      },
+      fluid: {
+        title: 'Fluid',
+        hint: 'Real-time fluid dynamics simulation with dye injection rendered in ASCII.',
+        params: {
+          speed:      { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:    { type: 'select', value: 'plasma', options: ['plasma', 'ocean', 'fire', 'neon', 'mono'] },
+          resolution: { type: 'select', value: 'medium', options: ['low', 'medium', 'high', 'ultra'] },
+          diffusion:  { type: 'range', min: 0, max: 0.01, step: 0.0001, value: 0.0001 },
+          viscosity:  { type: 'range', min: 0, max: 0.001, step: 0.00005, value: 0 },
+          dyeFade:    { type: 'range', min: 0.98, max: 1, step: 0.001, value: 0.995 }
+        }
+      },
+      thunderstorm: {
+        title: 'Thunderstorm',
+        hint: 'Dynamic rain, lightning bolts, and storm clouds in ASCII.',
+        params: {
+          intensity: { type: 'range', min: 0.2, max: 2, step: 0.05, value: 1.0 },
+          wind:      { type: 'range', min: -1, max: 1, step: 0.05, value: 0.3 },
+          lightning: { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          palette:   { type: 'select', value: 'tempest', options: ['tempest', 'tropical', 'desert', 'arctic', 'mono'] }
+        }
+      },
+      incense: {
+        title: 'Incense',
+        hint: 'Smoke particle simulation rising from an incense stick with wind and turbulence controls.',
+        params: {
+          speed:          { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          smokeDensity:   { type: 'range', min: 0.2, max: 3, step: 0.1, value: 1.0 },
+          smokeLifespan:  { type: 'range', min: 0.5, max: 4, step: 0.1, value: 1.0 },
+          smokeColor:     { type: 'select', value: 'warm', options: ['warm', 'cool', 'incense', 'sage', 'lavender', 'mono'] },
+          windDirection:  { type: 'range', min: -1, max: 1, step: 0.05, value: 0.0 },
+          windSpeed:      { type: 'range', min: 0, max: 2, step: 0.05, value: 0.3 },
+          randomization:  { type: 'range', min: 0, max: 2, step: 0.05, value: 0.8 }
+        }
+      },
+      campfire: {
+        title: 'Campfire',
+        hint: 'Layered noise-driven flame tongues with rising embers, a dark forest silhouette, and a drifting firefly.',
+        params: {
+          speed:            { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:          { type: 'select', value: 'warm', options: ['warm', 'blueFlame', 'greenFlame', 'violetFlame', 'mono'] },
+          flameHeight:      { type: 'range', min: 0.5, max: 2.0, step: 0.1, value: 1.0 },
+          emberRate:        { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          crackleIntensity: { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          forestSilhouette: { type: 'select', value: 1, options: [0, 1] }
+        }
+      },
+      planet: {
+        title: 'Planet',
+        hint: 'Rotating planet sphere with atmosphere, optional rings, and polar aurora.',
+        params: {
+          speed:                  { type: 'range', min: 0.2, max: 4, step: 0.1, value: 0.5 },
+          planetColor:            { type: 'select', value: 'earth', options: ['earth', 'mars', 'ice', 'gas', 'lava', 'ocean', 'mono'] },
+          planetSize:             { type: 'range', min: 0.3, max: 1.5, step: 0.05, value: 1.0 },
+          rings:                  { type: 'select', value: 1, options: [0, 1] },
+          atmosphereColor:        { type: 'select', value: 'cyan', options: ['cyan', 'amber', 'violet', 'green', 'red', 'white'] },
+          atmosphereDensity:      { type: 'range', min: 0, max: 2, step: 0.05, value: 1.0 },
+          atmosphereTurbulence:   { type: 'range', min: 0, max: 2, step: 0.05, value: 0.6 },
+          atmosphereDirection:    { type: 'range', min: -1, max: 1, step: 0.05, value: 0.3 },
+          aurora:                 { type: 'select', value: 1, options: [0, 1] }
+        }
+      },
+      gameoflife: {
+        title: 'Game of Life',
+        hint: 'Conway cells rendered as growing and wilting garden glyphs.',
+        params: {
+          speed:      { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:    { type: 'select', value: 'spring', options: ['spring', 'autumn', 'neon', 'mono'] },
+          cellSize:   { type: 'range', min: 8, max: 32, step: 1, value: 16 },
+          density:    { type: 'range', min: 0, max: 1, step: 0.01, value: 0.35 },
+          reseedMode: { type: 'select', value: 'mixed', options: ['random', 'classic', 'mixed'] }
+        }
+      },
+      sandmandala: {
+        title: 'Sand Mandala',
+        hint: 'Radial sand mandala that builds grain by grain, holds, dissolves, and rebuilds.',
+        params: {
+          speed:          { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:        { type: 'select', value: 'tibetan', options: ['tibetan', 'desert', 'ocean', 'jewel', 'mono'] },
+          symmetry:       { type: 'select', value: 8, options: [4, 6, 8, 12] },
+          holdTime:       { type: 'range', min: 0, max: 900, step: 30, value: 300 },
+          dissolveStyle:  { type: 'select', value: 'wind', options: ['sweep', 'wind', 'fade'] }
+        }
+      },
+      boids: {
+        title: 'Boids Flock',
+        hint: 'Classic boid flocking — separation, alignment, cohesion — with an optional predator that scatters the flock.',
+        params: {
+          speed:      { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:    { type: 'select', value: 'birds', options: ['birds', 'fish', 'abstract', 'mono'] },
+          flockSize:  { type: 'range', min: 20, max: 150, step: 1, value: 60 },
+          cohesion:   { type: 'range', min: 0, max: 2, step: 0.05, value: 1.0 },
+          separation: { type: 'range', min: 0, max: 2, step: 0.05, value: 1.0 },
+          predator:   { type: 'select', value: 0, options: [0, 1] },
+          predatorSpeed: { type: 'range', min: 0.5, max: 3.0, step: 0.05, value: 1.35 }
+        }
+      },
+      windchimes: {
+        title: 'Wind Chimes',
+        hint: 'Hanging chime tubes swaying as damped pendulums in a gusty breeze, with proximity glint flashes and synthesized bell tones (press M to toggle sound).',
+        params: {
+          speed:         { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:       { type: 'select', value: 'bronze', options: ['bronze', 'silver', 'bamboo', 'glass', 'mono'] },
+          chimeCount:    { type: 'range', min: 3, max: 7, step: 1, value: 5 },
+          windStrength:  { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          gustFrequency: { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          doublePendulum: { type: 'select', value: 0, options: [0, 1] },
+          soundType:     { type: 'select', value: 'bell', options: ['bell', 'crystal', 'wood', 'gong'] },
+          pitch:         { type: 'range', min: 2.0, max: 5.0, step: 0.05, value: 2.0 }
+        }
+      },
+      vinyl: {
+        title: 'Vinyl Spin',
+        hint: 'Spinning turntable with a rotating groove sheen, procedural radial label, tracking tonearm, and lamplit dust motes.',
+        params: {
+          speed:       { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:     { type: 'select', value: 'vinylBlack', options: ['vinylBlack', 'red', 'blue', 'gold', 'mono'] },
+          dustDensity: { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          lampGlow:    { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 }
+        }
+      },
+      waterfall: {
+        title: 'Waterfall',
+        hint: 'Cascading waterfall through a mossy rock channel with a base mist/spray burst and an optional faint rainbow arc.',
+        params: {
+          speed:         { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:       { type: 'select', value: 'clear', options: ['clear', 'glacier', 'jungle', 'moonlit', 'mono'] },
+          flowDensity:   { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          mistIntensity: { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          rainbow:       { type: 'select', value: 1, options: [0, 1] }
+        }
+      },
+      jellyfish: {
+        title: 'Jellyfish Drift',
+        hint: 'Bioluminescent jellyfish drifting through deep-sea darkness with pulsing bell glow, wavy trailing tentacles, and plankton sparkle.',
+        params: {
+          speed:          { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:        { type: 'select', value: 'blue', options: ['blue', 'purple', 'teal', 'pink', 'mono'] },
+          jellyfishCount: { type: 'range', min: 3, max: 10, step: 1, value: 6 },
+          glowIntensity:  { type: 'range', min: 0, max: 2, step: 0.05, value: 1.0 },
+          driftCurrents:  { type: 'range', min: 0, max: 2, step: 0.05, value: 1.0 }
+        }
+      },
+      terrarium: {
+        title: 'Terrarium',
+        hint: 'A living ecosystem: plants grow, seed, wilt and decay; fungi recycle litter into soil nutrients; detritivores, leaf-grazing snails, a centipede predator, and a foraging ant colony cycle through closed water, nutrient, and light cycles under day/night and seasons. Nothing goes extinct.',
+        params: {
+          speed:        { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:      { type: 'select', value: 'mossy', options: ['mossy', 'tropical', 'desert', 'autumn', 'mono'] },
+          plantDensity: { type: 'range', min: 1, max: 5, step: 1, value: 3 },
+          condensation: { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          growthCycle:  { type: 'select', value: 'loop', options: ['loop', 'static'] },
+          cycleTime:    { type: 'range', min: 0, max: 30, step: 0.5, value: 8.0 },
+          seasonTime:   { type: 'range', min: 0, max: 60, step: 1, value: 24.0 },
+          faunaRate:    { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 },
+          predatorRate: { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 }
+        }
+      },
+      aquarium: {
+        title: 'Aquarium',
+        hint: 'A living reef: the fish school rests at night, flees a roaming predator, and swarms feeding events, under a day/night lighting cycle with sunbeams, plankton, kelp, and sand crabs.',
+        params: {
+          speed:        { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:      { type: 'select', value: 'tropical', options: ['tropical', 'deepsea', 'freshwater', 'neon', 'mono'] },
+          fishCount:    { type: 'range', min: 5, max: 20, step: 1, value: 10 },
+          kelpDensity:  { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          bubbleRate:   { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          cycleTime:    { type: 'range', min: 0, max: 30, step: 0.5, value: 8.0 },
+          predatorRate: { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 },
+          feedRate:     { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 }
+        }
+      },
+      spiderweb: {
+        title: 'Spider Web',
+        hint: 'A spider builds its web strand by strand, hunts drifting prey, flees wasp raids and bird strikes, and repairs the damage — all under a soft moonlight glow.',
+        params: {
+          speed:        { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:      { type: 'select', value: 'moonlit', options: ['moonlit', 'dawn', 'amber', 'frost', 'mono'] },
+          pacing:       { type: 'select', value: 'medium', options: ['brisk', 'medium', 'slow', 'glacial'] },
+          webSway:      { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 },
+          dewDensity:   { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 },
+          preyRate:     { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 },
+          predatorRate: { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 },
+          moonGlow:     { type: 'range', min: 0, max: 3, step: 0.1, value: 1.0 }
+        }
+      },
+      volcano: {
+        title: 'Volcanic Flow',
+        hint: 'Night mountain with a glowing crater, lava flowing down a fixed channel, eruption sparks, and a rising smoke plume.',
+        params: {
+          speed:         { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:       { type: 'select', value: 'classic', options: ['classic', 'sulfur', 'obsidian', 'blueFlame', 'mono'] },
+          flowIntensity: { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          eruptionRate:  { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 },
+          smokeDensity:  { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 }
+        }
+      },
+      oscilloscope: {
+        title: 'Oscilloscope',
+        hint: 'A CRT lab instrument left running forever — a glowing phosphor Lissajous trace with decay, scanlines and bloom.',
+        params: {
+          speed:         { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          complexity:    { type: 'range', min: 1, max: 6, step: 1, value: 3 },
+          phosphorDecay: { type: 'range', min: 0.80, max: 0.99, step: 0.01, value: 0.92 },
+          noise:         { type: 'range', min: 0, max: 1, step: 0.05, value: 0.2 },
+          palette:       { type: 'select', value: 'phosphor', options: ['phosphor', 'amber', 'blue'] },
+          shapeSet:      { type: 'select', value: 'all', options: ['all', 'curves', 'geometric', 'waveforms'] },
+          cyclePeriod:   { type: 'range', min: 4, max: 40, step: 1, value: 14 },
+          morphTime:     { type: 'range', min: 0.3, max: 5, step: 0.1, value: 1.5 }
+        }
+      },
+      pendulum_wave: {
+        title: 'Pendulum Wave',
+        hint: 'Pendulums of progressively shorter period swinging in and out of phase — travelling waves that periodically snap back into perfect sync.',
+        params: {
+          speed:         { type: 'range', min: 0.05, max: 1, step: 0.025, value: 0.25 },
+          palette:       { type: 'select', value: 'spectrum', options: ['spectrum', 'warm', 'cool', 'mono'] },
+          pendulumCount: { type: 'range', min: 8, max: 24, step: 1, value: 18 },
+          cycleTime:     { type: 'range', min: 4, max: 16, step: 0.5, value: 8.0 },
+          swingAngle:    { type: 'range', min: 0.1, max: 0.8, step: 0.05, value: 0.4 }
+        }
+      },
+      glitch_field: {
+        title: 'Glitch Field',
+        hint: 'A broken digital reality — a character grid torn by drifting corruption bands, RGB split, scanline tearing and packet loss.',
+        params: {
+          speed:          { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          palette:        { type: 'select', value: 'terminal', options: ['terminal', 'amber', 'vapor', 'mono'] },
+          density:        { type: 'range', min: 0, max: 1, step: 0.05, value: 0.8 },
+          corruptionRate: { type: 'range', min: 0, max: 1, step: 0.05, value: 0.2 },
+          scanBands:      { type: 'range', min: 0, max: 6, step: 1, value: 3 },
+          chaos:          { type: 'range', min: 0, max: 2, step: 0.1, value: 1.0 }
+        }
+      },
+      cyber_deck: {
+        title: 'Cyber Deck',
+        hint: 'A fictional 1998 hacker terminal that never finishes booting — boot sequence, hex dumps, hardware diagrams, glitches and the occasional kernel panic.',
+        params: {
+          speed:         { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          terminalStyle: { type: 'select', value: 'amber', options: ['amber', 'green', 'blue'] },
+          corruption:    { type: 'range', min: 0, max: 1, step: 0.05, value: 0.2 },
+          bootCycle:     { type: 'range', min: 0, max: 1, step: 1, value: 1 },
+          scrollSpeed:   { type: 'range', min: 1, max: 20, step: 1, value: 8 }
+        }
+      },
+      attractor: {
+        title: 'Attractor',
+        hint: 'A particle tracing a real strange-attractor equation — Lorenz butterfly and Rössler ribbon rendered as speed-weighted ASCII glyphs through a slowly rotating 3D camera.',
+        params: {
+          speed:         { type: 'range', min: 0.2, max: 4, step: 0.1, value: 1.0 },
+          cycleTime:     { type: 'range', min: 10, max: 60, step: 1, value: 30 },
+          trailLength:   { type: 'range', min: 200, max: 2000, step: 50, value: 800 },
+          rotationSpeed: { type: 'range', min: 0, max: 0.5, step: 0.01, value: 0.1 },
+          palette:       { type: 'select', value: 'ice', options: ['ice', 'ember', 'spectrum', 'mono'] }
+        }
+      }
+    };
+
+    const animationOrder = Object.keys(DEFINITIONS);
+    let config = defaultConfig();
+    let activeAnimation = 'terrarium';
+    let dirty = false;
+    let weightSortDir = 'desc';
+
+    const $ = (id) => document.getElementById(id);
+
+    function defaultConfig() {
+      return {
+        enabled: true,
+        mode: 'random',
+        selectedAnimation: 'terrarium',
+        animations: animationOrder.map((name) => ({
+          name,
+          enabled: true,
+          weight: 2,
+          params: Object.fromEntries(Object.entries(DEFINITIONS[name].params).map(([key, spec]) => [key, spec.value]))
+        }))
+      };
+    }
+
+    function mergeConfig(incoming) {
+      const base = defaultConfig();
+      base.enabled = incoming.enabled ?? true;
+      base.mode = incoming.mode === 'single' ? 'single' : 'random';
+      base.selectedAnimation = animationOrder.includes(incoming.selectedAnimation) ? incoming.selectedAnimation : 'terrarium';
+
+      for (const baseAnimation of base.animations) {
+        const savedAnimation = (incoming.animations || []).find((item) => item.name === baseAnimation.name);
+        if (!savedAnimation) continue;
+        baseAnimation.enabled = savedAnimation.enabled ?? true;
+        baseAnimation.weight = Number(savedAnimation.weight ?? baseAnimation.weight);
+        baseAnimation.params = { ...baseAnimation.params, ...(savedAnimation.params || {}) };
+      }
+
+      return base;
+    }
+
+    async function loadConfig() {
+      try {
+        const response = await fetch('/api/config');
+        config = mergeConfig(await response.json());
+        activeAnimation = config.selectedAnimation;
+        render();
+        setDirty(false);
+      } catch (error) {
+        showMessage(`Could not load config: ${error.message}`, true);
+        render();
+      }
+    }
+
+    function render() {
+      $('enabled').checked = config.enabled;
+      $('mode').value = config.mode;
+      $('selectedAnimation').innerHTML = animationOrder.map((name) => {
+        const selected = name === config.selectedAnimation ? 'selected' : '';
+        return `<option value="${name}" ${selected}>${DEFINITIONS[name].title}</option>`;
+      }).join('');
+
+      renderAnimationPanel();
+      renderEditor();
+      refreshPreview();
+    }
+
+    function renderAnimationPanel() {
+      const panel = $('animationList');
+      const filter = ($('animationFilter').value || '').trim().toLowerCase();
+      const visible = config.animations.filter((animation) =>
+        DEFINITIONS[animation.name].title.toLowerCase().includes(filter)
+      );
+      visible.sort((a, b) => {
+        const diff = weightSortDir === 'asc' ? a.weight - b.weight : b.weight - a.weight;
+        if (diff !== 0) return diff;
+        return animationOrder.indexOf(a.name) - animationOrder.indexOf(b.name);
+      });
+      panel.innerHTML = `
+        <div class="panel-label">Animations</div>
+        ${visible.length === 0 ? '<div class="status">No animations match "' + filter + '".</div>' : ''}
+        ${visible.map((animation) => {
+          const definition = DEFINITIONS[animation.name];
+          const activeClass = animation.name === activeAnimation ? ' active' : '';
+          const enabledText = animation.enabled ? 'on' : 'off';
+          const excludedNote = animation.weight === 0 ? ' &middot; excluded (weight 0)' : '';
+          return `
+            <div class="anim-row${activeClass}" data-animation="${animation.name}">
+              <div class="anim-row-header">
+                <span class="animation-name">${definition.title}</span>
+                <span class="animation-meta" id="meta-${animation.name}">${enabledText} &middot; ${Object.keys(definition.params).length} params${excludedNote}</span>
+                <span class="weight-value" id="global-weight-${animation.name}">${animation.weight}</span>
+              </div>
+              <div class="anim-row-slider">
+                <input type="range" min="0" max="10" step="1" value="${animation.weight}" data-weight="${animation.name}" aria-label="${definition.title} random weight">
+              </div>
+            </div>
+          `;
+        }).join('')}
+      `;
+
+      panel.querySelectorAll('[data-animation]').forEach((row) => {
+        row.addEventListener('click', (e) => {
+          if (e.target.closest('[data-weight]')) return;
+          activeAnimation = row.dataset.animation;
+          config.selectedAnimation = activeAnimation;
+          setDirty(true);
+          render();
+        });
+      });
+
+      panel.querySelectorAll('[data-weight]').forEach((input) => {
+        input.addEventListener('input', () => {
+          const animation = config.animations.find((item) => item.name === input.dataset.weight);
+          animation.weight = Number(input.value);
+          $(`global-weight-${animation.name}`).textContent = animation.weight;
+          const definition = DEFINITIONS[animation.name];
+          const enabledText = animation.enabled ? 'on' : 'off';
+          const excludedNote = animation.weight === 0 ? ' &middot; excluded (weight 0)' : '';
+          $(`meta-${animation.name}`).innerHTML = `${enabledText} &middot; ${Object.keys(definition.params).length} params${excludedNote}`;
+          if (animation.name === activeAnimation) {
+            $('weight').value = animation.weight;
+            $('weightValue').textContent = animation.weight;
+          }
+          setDirty(true);
+        });
+        input.addEventListener('change', renderAnimationPanel);
+      });
+    }
+
+    function renderEditor() {
+      const animation = getActiveAnimation();
+      const definition = DEFINITIONS[activeAnimation];
+      $('editorTitle').textContent = definition.title;
+      $('editorHint').textContent = definition.hint;
+      $('animationEnabled').checked = animation.enabled;
+      $('weight').value = animation.weight;
+      $('weightValue').textContent = animation.weight;
+
+      document.body.dataset.anim = activeAnimation;
+
+      $('paramGrid').innerHTML = Object.entries(definition.params).map(([key, spec]) => {
+        const value = animation.params[key] ?? spec.value;
+        if (spec.type === 'select') {
+          const options = spec.options.map((option) => {
+            const selected = String(option) === String(value) ? 'selected' : '';
+            return `<option value="${option}" ${selected}>${formatValue(option)}</option>`;
+          }).join('');
+          return `
+            <div class="field">
+              <label for="param-${key}">${formatLabel(key)}</label>
+              <select id="param-${key}" data-param="${key}">${options}</select>
+            </div>
+          `;
+        }
+        return `
+          <div class="field">
+            <label for="param-${key}">${formatLabel(key)}</label>
+            <div class="range-row">
+              <input type="range" id="param-${key}" data-param="${key}" min="${spec.min}" max="${spec.max}" step="${spec.step}" value="${value}">
+              <span class="field-value" id="value-${key}">${formatValue(value)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('[data-param]').forEach((input) => {
+        input.addEventListener('input', () => {
+          const key = input.dataset.param;
+          const spec = definition.params[key];
+          animation.params[key] = spec.type === 'range' ? Number(input.value) : coerceSelectValue(input.value, spec.value);
+          const valueEl = $(`value-${key}`);
+          if (valueEl) valueEl.textContent = formatValue(animation.params[key]);
+          setDirty(true);
+          refreshPreview();
+        });
+      });
+    }
+
+    function getActiveAnimation() {
+      return config.animations.find((animation) => animation.name === activeAnimation);
+    }
+
+    function buildPreviewUrl() {
+      const animation = getActiveAnimation();
+      const params = new URLSearchParams({ preview: '1' });
+      Object.entries(animation.params).forEach(([key, value]) => params.set(key, value));
+      return `/animations/${animation.name}/index.html?${params.toString()}`;
+    }
+
+    function refreshPreview() {
+      const animation = getActiveAnimation();
+      if (!animation) return;
+      $('previewTitle').textContent = `${DEFINITIONS[animation.name].title} preview`;
+      $('previewParams').textContent = new URLSearchParams(animation.params).toString();
+      $('previewFrame').src = buildPreviewUrl();
+      if ($('fullscreenPreview').classList.contains('open')) {
+        $('fullscreenTitle').textContent = `${DEFINITIONS[animation.name].title} fullscreen`;
+        $('fullscreenFrame').src = buildPreviewUrl();
+      }
+    }
+
+    function openFullscreenPreview() {
+      const animation = getActiveAnimation();
+      $('fullscreenTitle').textContent = `${DEFINITIONS[animation.name].title} fullscreen`;
+      $('fullscreenFrame').src = buildPreviewUrl();
+      $('fullscreenPreview').classList.add('open');
+      const panel = $('fullscreenPreview');
+      if (panel.requestFullscreen) panel.requestFullscreen().catch(() => {});
+    }
+
+    function closeFullscreenPreview() {
+      $('fullscreenPreview').classList.remove('open');
+      $('fullscreenFrame').src = 'about:blank';
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    }
+
+    async function saveConfig() {
+      try {
+        const response = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config)
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || 'Save failed');
+        config = mergeConfig(result.config);
+        setDirty(false);
+
+        const btn = $('saveConfig');
+        btn.classList.remove('flash-save');
+        void btn.offsetWidth;
+        btn.classList.add('flash-save');
+        btn.addEventListener('animationend', () => btn.classList.remove('flash-save'), { once: true });
+
+        render();
+        showMessage('Saved to screensaver-config.json');
+      } catch (error) {
+        showMessage(`Save failed: ${error.message}`, true);
+      }
+    }
+
+    function exportConfig() {
+      const blob = new Blob([JSON.stringify(config, null, 2) + '\n'], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'screensaver-config.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function setDirty(value) {
+      dirty = value;
+      $('saveLight').textContent = dirty ? 'Unsaved' : 'Saved';
+      $('saveLight').classList.toggle('dirty', dirty);
+    }
+
+    function showMessage(text, isError = false) {
+      const el = $('message');
+      el.classList.remove('animate-in');
+      void el.offsetWidth;
+      el.textContent = text;
+      el.classList.toggle('error', isError);
+      el.classList.add('animate-in');
+    }
+
+    function formatLabel(key) {
+      return key.replace(/([A-Z])/g, ' $1').replace(/^./, (char) => char.toUpperCase());
+    }
+
+    function formatValue(value) {
+      return typeof value === 'number' && !Number.isInteger(value) ? value.toFixed(2) : String(value);
+    }
+
+    function coerceSelectValue(value, sample) {
+      return typeof sample === 'number' ? Number(value) : value;
+    }
+
+    $('enabled').addEventListener('change', () => {
+      config.enabled = $('enabled').checked;
+      setDirty(true);
+    });
+
+    $('mode').addEventListener('change', () => {
+      config.mode = $('mode').value;
+      setDirty(true);
+    });
+
+    $('selectedAnimation').addEventListener('change', () => {
+      activeAnimation = $('selectedAnimation').value;
+      config.selectedAnimation = activeAnimation;
+      setDirty(true);
+      render();
+    });
+
+    $('animationEnabled').addEventListener('change', () => {
+      getActiveAnimation().enabled = $('animationEnabled').checked;
+      setDirty(true);
+      renderAnimationPanel();
+    });
+
+    $('weight').addEventListener('input', () => {
+      getActiveAnimation().weight = Number($('weight').value);
+      $('weightValue').textContent = $('weight').value;
+      setDirty(true);
+      renderAnimationPanel();
+    });
+
+    function updateSortToggle() {
+      $('sortArrow').textContent = weightSortDir === 'asc' ? '▲' : '▼';
+      $('sortLabel').textContent = weightSortDir === 'asc' ? 'Low' : 'High';
+      $('weightSortToggle').title = weightSortDir === 'asc'
+        ? 'Sorting lowest weight first — click for highest first'
+        : 'Sorting highest weight first — click for lowest first';
+    }
+
+    $('weightSortToggle').addEventListener('click', () => {
+      weightSortDir = weightSortDir === 'asc' ? 'desc' : 'asc';
+      updateSortToggle();
+      renderAnimationPanel();
+    });
+
+    $('animationFilter').addEventListener('input', renderAnimationPanel);
+    $('refreshPreview').addEventListener('click', refreshPreview);
+    $('openFullscreen').addEventListener('click', openFullscreenPreview);
+    $('closeFullscreen').addEventListener('click', closeFullscreenPreview);
+    $('saveConfig').addEventListener('click', saveConfig);
+    $('exportConfig').addEventListener('click', exportConfig);
+    $('resetConfig').addEventListener('click', () => {
+      config = defaultConfig();
+      activeAnimation = 'terrarium';
+      setDirty(true);
+      render();
+      showMessage('Defaults restored. Save to make them active.');
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && $('fullscreenPreview').classList.contains('open')) {
+        closeFullscreenPreview();
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && $('fullscreenPreview').classList.contains('open')) {
+        $('fullscreenPreview').classList.remove('open');
+        $('fullscreenFrame').src = 'about:blank';
+      }
+    });
+
+    updateSortToggle();
+    loadConfig();
+  </script>
+</body>
+</html>
