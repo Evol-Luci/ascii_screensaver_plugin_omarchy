@@ -18,35 +18,35 @@ A modular, multi-animation ASCII screensaver plugin for [Omarchy](https://omarch
 
 | Name | Preview | Description |
 |------|---------|-------------|
-| **bonsai** | ![bonsai](screenshots/bonsai.png) | Procedural bonsai tree that grows, holds, fades, and restarts. 6 palettes including natural, autumn, sakura, cherry, purple, and mono. |
-| **moon** | ![moon](screenshots/moon.png) | Orbital lunar phase cycle with limb darkening, glow halo, twinkling stars, gravitational lensing, and random space floaters. 5 palettes. |
-| **crawl** | ![crawl](screenshots/crawl.png) | Perspective Star Wars–style title crawl with 4 original episodes, 5 color palettes, and selectable or random episode order. |
-| **blackhole** | ![blackhole](screenshots/blackhole.png) | Accretion disk with Schwarzschild-inspired gravitational lensing, Doppler brightening, relativistic jets, and photon ring. 4 palettes. |
-| **aurora** | ![aurora](screenshots/aurora.png) | Procedural aurora borealis ribbons over a twinkling star field. 5 palettes, adjustable band count and brightness. |
-| **mandelbrot** | ![mandelbrot](screenshots/mandelbrot.png) | Zooming ASCII fractal renderer with auto-jumping boundary regions. 5 palettes, 3 charsets. |
-| **pipes** | ![pipes](screenshots/pipes.png) | Growing 3D-cylinder pipe network rendered with Unicode box-drawing characters. 5 palettes, adjustable density and spawn rate. |
-| **fluid** | ![fluid](screenshots/fluid.png) | Real-time fluid dynamics simulation with dye injection, rendered in ASCII. 4 resolution tiers, 5 palettes. |
-| **thunderstorm** | ![thunderstorm](screenshots/thunderstorm.png) | Dynamic rain, lightning bolts, and storm clouds in ASCII. 5 palettes, adjustable wind and lightning intensity. |
-| **incense** | ![incense](screenshots/incense.png) | Multi-stick incense altar with rising smoke particles, glow, ash, and sparks. 6 smoke-color palettes, wind controls. |
-| **campfire** | ![campfire](screenshots/campfire.png) | Crackling campfire with layered noise-driven flame tongues, rising embers, a dark forest silhouette, and a drifting firefly. 5 flame-color palettes. |
-| **nixie** | ![nixie](screenshots/nixie.png) | Vintage nixie-tube clock with cathode poisoning, neon glow bloom, and per-tube flicker. Inspired by joeparadiso/nixie-tube-clock. |
-| **planet** | ![planet](screenshots/planet.png) | Rotating ASCII planet sphere with atmosphere, optional rings, and polar aurora. 7 planet colors, 6 atmosphere colors. |
-| **gameoflife** | ![gameoflife](screenshots/gameoflife.png) | Conway's Game of Life rendered as a growing/wilting ASCII garden — cell age maps to seedling/sprout/flower/wilt glyphs. Auto-reseeds with random fills or classic patterns on stagnation or extinction. 4 palettes. |
-| **sandmandala** | ![sandmandala](screenshots/sandmandala.png) | Procedural N-fold radial-symmetry sand mandala that builds grain-by-grain, holds, then dissolves and rebuilds with a new random pattern. 5 palettes. |
-| **boids** | ![boids](screenshots/boids.png) | Flock of triangular glyphs under classic separation/alignment/cohesion boid rules, with an optional scattering predator. 4 palettes, adjustable flock size and rule weights. |
-| **windchimes** | ![windchimes](screenshots/windchimes.png) | Hanging chime tubes swaying as damped pendulums in a noise-driven gusty breeze, with proximity-triggered glint flashes and procedurally synthesized bell tones (press M to toggle sound). 5 material palettes. |
-| **vinyl** | ![vinyl](screenshots/vinyl.png) | Top-down spinning vinyl record with rotating groove sheen, a procedural radial label, a tonearm that tracks inward over the track's runtime, and lamplit dust motes. 5 palettes. |
-| **waterfall** | ![waterfall](screenshots/waterfall.png) | Cascading waterfall through a mossy rock channel with a base mist/spray burst and optional rainbow arc. 5 water-color palettes. |
-| **jellyfish** | ![jellyfish](screenshots/jellyfish.png) | Bioluminescent jellyfish drifting through deep-sea darkness with pulsing bell glow, wavy trailing tentacles, and plankton sparkle. 5 palettes. |
-| **terrarium** | ![terrarium](screenshots/terrarium.png) | A living glass ecosystem: plants grow, seed, wilt, and decay into litter; fungi decompose it back into soil nutrients; a 3-tier animal food web (detritivores, leaf-grazing snails, a roaming centipede predator) and a foraging ant colony cycle through it — all coupled by closed water, nutrient, and light cycles under a day/night and seasonal rhythm. Nothing goes permanently extinct. 5 palettes. |
-| **aquarium** | ![aquarium](screenshots/aquarium.png) | A living reef: a fish school that schools, rests at night, flees a roaming predator, and swarms feeding events, under a day/night lighting cycle with sunbeams, bioluminescent plankton, swaying kelp, sand crabs, and an aerator stream. 5 palettes. |
-| **spiderweb** | ![spiderweb](screenshots/spiderweb.png) | A spider builds its web strand by strand, hunts drifting prey, and survives wasp raids and telegraphed bird strikes that tear the web — then repairs the damage. Dew glints on finished strands, fireflies drift past, and a soft moon glows behind it all. 5 palettes; adjustable build pacing, prey/predator rates, sway, dew, and moonlight. |
-| **volcano** | ![volcano](screenshots/volcano.png) | Night mountain with a glowing crater, lava flowing down a fixed channel, eruption sparks, and a rising smoke plume. 5 lava-color palettes. |
-| **oscilloscope** | ![oscilloscope](screenshots/oscilloscope.png) | A CRT laboratory instrument left running forever — glowing phosphor Lissajous traces with decay, scanlines, and bloom. Vector rendering with speed-dependent brightness and multi-layer phosphor glow. |
-| **pendulum_wave** | ![pendulum_wave](screenshots/pendulum_wave.png) | Pendulums of progressively shorter period swinging in and out of phase, producing traveling-wave illusions that periodically snap back into sync. |
-| **glitch_field** | ![glitch_field](screenshots/glitch_field.png) | A broken digital reality — a character grid torn by drifting corruption bands, RGB split, scanline tearing and packet loss. |
-| **cyber_deck** | ![cyber_deck](screenshots/cyber_deck.png) | A fictional 1998 hacker terminal that never finishes booting — boot sequences, hex dumps, hardware diagrams, and glitches with occasional kernel panics. |
-| **attractor** | ![attractor](screenshots/attractor.png) | A particle tracing a real Lorenz/Rössler strange-attractor equation as speed-weighted ASCII glyphs through a rotating 3D camera |
+| **bonsai** | ![bonsai](screenshots/bonsai.gif) | Procedural bonsai tree that grows, holds, fades, and restarts. 6 palettes including natural, autumn, sakura, cherry, purple, and mono. |
+| **moon** | ![moon](screenshots/moon.gif) | Orbital lunar phase cycle with limb darkening, glow halo, twinkling stars, gravitational lensing, and random space floaters. 5 palettes. |
+| **crawl** | ![crawl](screenshots/crawl.gif) | Perspective Star Wars–style title crawl with 4 original episodes, 5 color palettes, and selectable or random episode order. |
+| **blackhole** | ![blackhole](screenshots/blackhole.gif) | Accretion disk with Schwarzschild-inspired gravitational lensing, Doppler brightening, relativistic jets, and photon ring. 4 palettes. |
+| **aurora** | ![aurora](screenshots/aurora.gif) | Procedural aurora borealis ribbons over a twinkling star field. 5 palettes, adjustable band count and brightness. |
+| **mandelbrot** | ![mandelbrot](screenshots/mandelbrot.gif) | Zooming ASCII fractal renderer with auto-jumping boundary regions. 5 palettes, 3 charsets. |
+| **pipes** | ![pipes](screenshots/pipes.gif) | Growing 3D-cylinder pipe network rendered with Unicode box-drawing characters. 5 palettes, adjustable density and spawn rate. |
+| **fluid** | ![fluid](screenshots/fluid.gif) | Real-time fluid dynamics simulation with dye injection, rendered in ASCII. 4 resolution tiers, 5 palettes. |
+| **thunderstorm** | ![thunderstorm](screenshots/thunderstorm.gif) | Dynamic rain, lightning bolts, and storm clouds in ASCII. 5 palettes, adjustable wind and lightning intensity. |
+| **incense** | ![incense](screenshots/incense.gif) | Multi-stick incense altar with rising smoke particles, glow, ash, and sparks. 6 smoke-color palettes, wind controls. |
+| **campfire** | ![campfire](screenshots/campfire.gif) | Crackling campfire with layered noise-driven flame tongues, rising embers, a dark forest silhouette, and a drifting firefly. 5 flame-color palettes. |
+| **nixie** | ![nixie](screenshots/nixie.gif) | Vintage nixie-tube clock with cathode poisoning, neon glow bloom, and per-tube flicker. Inspired by joeparadiso/nixie-tube-clock. |
+| **planet** | ![planet](screenshots/planet.gif) | Rotating ASCII planet sphere with atmosphere, optional rings, and polar aurora. 7 planet colors, 6 atmosphere colors. |
+| **gameoflife** | ![gameoflife](screenshots/gameoflife.gif) | Conway's Game of Life rendered as a growing/wilting ASCII garden — cell age maps to seedling/sprout/flower/wilt glyphs. Auto-reseeds with random fills or classic patterns on stagnation or extinction. 4 palettes. |
+| **sandmandala** | ![sandmandala](screenshots/sandmandala.gif) | Procedural N-fold radial-symmetry sand mandala that builds grain-by-grain, holds, then dissolves and rebuilds with a new random pattern. 5 palettes. |
+| **boids** | ![boids](screenshots/boids.gif) | Flock of triangular glyphs under classic separation/alignment/cohesion boid rules, with an optional scattering predator. 4 palettes, adjustable flock size and rule weights. |
+| **windchimes** | ![windchimes](screenshots/windchimes.gif) | Hanging chime tubes swaying as damped pendulums in a noise-driven gusty breeze, with proximity-triggered glint flashes and procedurally synthesized bell tones (press M to toggle sound). 5 material palettes. |
+| **vinyl** | ![vinyl](screenshots/vinyl.gif) | Top-down spinning vinyl record with rotating groove sheen, a procedural radial label, a tonearm that tracks inward over the track's runtime, and lamplit dust motes. 5 palettes. |
+| **waterfall** | ![waterfall](screenshots/waterfall.gif) | Cascading waterfall through a mossy rock channel with a base mist/spray burst and optional rainbow arc. 5 water-color palettes. |
+| **jellyfish** | ![jellyfish](screenshots/jellyfish.gif) | Bioluminescent jellyfish drifting through deep-sea darkness with pulsing bell glow, wavy trailing tentacles, and plankton sparkle. 5 palettes. |
+| **terrarium** | ![terrarium](screenshots/terrarium.gif) | A living glass ecosystem: plants grow, seed, wilt, and decay into litter; fungi decompose it back into soil nutrients; a 3-tier animal food web (detritivores, leaf-grazing snails, a roaming centipede predator) and a foraging ant colony cycle through it — all coupled by closed water, nutrient, and light cycles under a day/night and seasonal rhythm. Nothing goes permanently extinct. 5 palettes. |
+| **aquarium** | ![aquarium](screenshots/aquarium.gif) | A living reef: a fish school that schools, rests at night, flees a roaming predator, and swarms feeding events, under a day/night lighting cycle with sunbeams, bioluminescent plankton, swaying kelp, sand crabs, and an aerator stream. 5 palettes. |
+| **spiderweb** | ![spiderweb](screenshots/spiderweb.gif) | A spider builds its web strand by strand, hunts drifting prey, and survives wasp raids and telegraphed bird strikes that tear the web — then repairs the damage. Dew glints on finished strands, fireflies drift past, and a soft moon glows behind it all. 5 palettes; adjustable build pacing, prey/predator rates, sway, dew, and moonlight. |
+| **volcano** | ![volcano](screenshots/volcano.gif) | Night mountain with a glowing crater, lava flowing down a fixed channel, eruption sparks, and a rising smoke plume. 5 lava-color palettes. |
+| **oscilloscope** | ![oscilloscope](screenshots/oscilloscope.gif) | A CRT laboratory instrument left running forever — glowing phosphor Lissajous traces with decay, scanlines, and bloom. Vector rendering with speed-dependent brightness and multi-layer phosphor glow. |
+| **pendulum_wave** | ![pendulum_wave](screenshots/pendulum_wave.gif) | Pendulums of progressively shorter period swinging in and out of phase, producing traveling-wave illusions that periodically snap back into sync. |
+| **glitch_field** | ![glitch_field](screenshots/glitch_field.gif) | A broken digital reality — a character grid torn by drifting corruption bands, RGB split, scanline tearing and packet loss. |
+| **cyber_deck** | ![cyber_deck](screenshots/cyber_deck.gif) | A fictional 1998 hacker terminal that never finishes booting — boot sequences, hex dumps, hardware diagrams, and glitches with occasional kernel panics. |
+| **attractor** | ![attractor](screenshots/attractor.gif) | A particle tracing a real Lorenz/Rössler strange-attractor equation as speed-weighted ASCII glyphs through a rotating 3D camera |
 
 ---
 
