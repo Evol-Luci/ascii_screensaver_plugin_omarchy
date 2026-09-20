@@ -426,6 +426,9 @@ Item {
               onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
               onPreviewRequested: Quickshell.execDetached(
 
+                ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
+            }
+
             MarketplaceTab {
               Layout.fillWidth: true
               Layout.fillHeight: true
@@ -444,8 +447,7 @@ Item {
                 root.uninstallAnimation(animId)
               }
             }
-                ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
-            }
+
 
             Item { Layout.preferredHeight: Style.spacing.xl }
           }
