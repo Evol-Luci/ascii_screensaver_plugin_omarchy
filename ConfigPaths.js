@@ -2,7 +2,7 @@ function userConfigPath() {
   var xdgConfigHome = Quickshell.env("XDG_CONFIG_HOME")
   var home = Quickshell.env("HOME")
   var configHome = xdgConfigHome && xdgConfigHome.length > 0 ? xdgConfigHome : (home + "/.config")
-  return configHome + "/omarchy/ascii-screensaver/screensaver-config.json"
+  return configHome + "/ascii-screensaver/screensaver-config.json"
 }
 
 function bundledConfigPath(pluginDir) {
