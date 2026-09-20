@@ -283,237 +283,301 @@ Item {
       onActivated: root.requestClose()
     }
 
-    RowLayout {
+    ColumnLayout {
       anchors.fill: parent
       spacing: 0
 
-      // ------------------------------------------------------------ sidebar
-      Item {
+      // ------------------------------------------------------------- header
+      RowLayout {
+        Layout.fillWidth: true
+        Layout.leftMargin: Style.spacing.xl
+        Layout.rightMargin: Style.spacing.xl
+        Layout.topMargin: Style.spacing.md
+        Layout.bottomMargin: Style.spacing.sm
+        spacing: Style.spacing.sm
+
+        Text {
+          text: "ASCII SCREENSAVER"
+          color: Color.foreground
+          font.family: Style.font.family
+          font.pixelSize: Style.font.heading
+          font.bold: true
+        }
+
+        Rectangle {
+          Layout.alignment: Qt.AlignVCenter
+          implicitWidth: Style.normalBorderWidth
+          implicitHeight: Style.font.heading
+          color: Color.muted
+          opacity: 0.35
+        }
+
+        Text {
+          // Same Nerd Font glyph (nf-md-monitor) as the bar widget icon.
+          text: "󱄄"
+          color: Color.foreground
+          font.family: Style.font.family
+          font.pixelSize: Style.font.icon
+        }
+
+        Rectangle {
+          Layout.alignment: Qt.AlignVCenter
+          implicitWidth: Style.normalBorderWidth
+          implicitHeight: Style.font.heading
+          color: Color.muted
+          opacity: 0.35
+        }
+
+        Text {
+          text: "A living, growing screensaver for Omarchy"
+          color: Color.muted
+          font.family: Style.font.family
+          font.pixelSize: Style.font.caption
+        }
+
+        Item { Layout.fillWidth: true }
+      }
+
+      PanelSeparator {
+        Layout.fillWidth: true
+        Layout.leftMargin: Style.spacing.xl
+        Layout.rightMargin: Style.spacing.xl
+        Layout.bottomMargin: Style.spacing.xs
+      }
+
+      RowLayout {
+        Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.fillWidth: window.narrow
-        Layout.preferredWidth: window.narrow ? -1 : Style.space(248)
-        visible: !window.narrow || root.selection === ""
+        spacing: 0
 
-        ScrollView {
-          id: sidebarScroll
-          anchors.fill: parent
-          contentWidth: availableWidth
-          clip: true
+        // ------------------------------------------------------------ sidebar
+        Item {
+          Layout.fillHeight: true
+          Layout.fillWidth: window.narrow
+          Layout.preferredWidth: window.narrow ? -1 : Style.space(248)
+          visible: !window.narrow || root.selection === ""
 
-          ColumnLayout {
-            width: sidebarScroll.availableWidth
-            spacing: Style.spacing.xxs
+          ScrollView {
+            id: sidebarScroll
+            anchors.fill: parent
+            contentWidth: availableWidth
+            clip: true
 
-            Item { Layout.preferredHeight: Style.spacing.lg }
+            ColumnLayout {
+              width: sidebarScroll.availableWidth
+              spacing: Style.spacing.xxs
 
-            SidebarRow {
-              Layout.fillWidth: true
-              Layout.leftMargin: Style.spacing.md
-              Layout.rightMargin: Style.spacing.md
-              title: "General"
-              subtitle: root.persistedConfig.enabled === false
-                ? "Screensaver off"
-                : (root.randomMode ? "Random · " + ParamMeta.formatDuration(root.persistedConfig.screensaverDelaySeconds !== undefined ? root.persistedConfig.screensaverDelaySeconds : 150)
-                                   : "Single · " + ParamMeta.formatDuration(root.persistedConfig.screensaverDelaySeconds !== undefined ? root.persistedConfig.screensaverDelaySeconds : 150))
-              selected: root.selection === "general"
-              onClicked: root.selection = "general"
-            }
+              Item { Layout.preferredHeight: Style.spacing.lg }
 
-            PanelSeparator {
-              Layout.fillWidth: true
-              Layout.topMargin: Style.spacing.sm
-              Layout.bottomMargin: Style.spacing.sm
-              Layout.leftMargin: Style.spacing.xl
-              Layout.rightMargin: Style.spacing.xl
-            }
-
-            SidebarRow {
-              Layout.fillWidth: true
-              Layout.leftMargin: Style.spacing.md
-              Layout.rightMargin: Style.spacing.md
-              title: "Marketplace"
-              subtitle: "Browse & install animations"
-              selected: root.selection === "marketplace"
-              onClicked: root.selection = "marketplace"
-            }
-
-            PanelSeparator {
-              Layout.fillWidth: true
-              Layout.topMargin: Style.spacing.sm
-              Layout.bottomMargin: Style.spacing.sm
-              Layout.leftMargin: Style.spacing.xl
-              Layout.rightMargin: Style.spacing.xl
-            }
-
-            PanelSectionHeader {
-              text: "Animations"
-              Layout.leftMargin: Style.spacing.xl
-            }
-
-            Repeater {
-              model: root.animationNames
-
-              delegate: SidebarRow {
-                required property string modelData
-
+              SidebarRow {
                 Layout.fillWidth: true
                 Layout.leftMargin: Style.spacing.md
                 Layout.rightMargin: Style.spacing.md
-                title: root.schemaFor(modelData) && root.schemaFor(modelData).title
-                  ? root.schemaFor(modelData).title : ParamMeta.formatLabel(modelData)
-                subtitle: root.sidebarSubtitle(modelData)
-                selected: root.selection === modelData
-                dimmed: root.entryFor(modelData).enabled === false
-                onClicked: root.selection = modelData
+                title: "General"
+                subtitle: root.persistedConfig.enabled === false
+                  ? "Screensaver off"
+                  : (root.randomMode ? "Random · " + ParamMeta.formatDuration(root.persistedConfig.screensaverDelaySeconds !== undefined ? root.persistedConfig.screensaverDelaySeconds : 150)
+                                     : "Single · " + ParamMeta.formatDuration(root.persistedConfig.screensaverDelaySeconds !== undefined ? root.persistedConfig.screensaverDelaySeconds : 150))
+                selected: root.selection === "general"
+                onClicked: root.selection = "general"
               }
-            }
 
-            Item { Layout.preferredHeight: Style.spacing.lg }
+              PanelSeparator {
+                Layout.fillWidth: true
+                Layout.topMargin: Style.spacing.sm
+                Layout.bottomMargin: Style.spacing.sm
+                Layout.leftMargin: Style.spacing.xl
+                Layout.rightMargin: Style.spacing.xl
+              }
+
+              SidebarRow {
+                Layout.fillWidth: true
+                Layout.leftMargin: Style.spacing.md
+                Layout.rightMargin: Style.spacing.md
+                title: "Marketplace"
+                subtitle: "Browse & install animations"
+                selected: root.selection === "marketplace"
+                onClicked: root.selection = "marketplace"
+              }
+
+              PanelSeparator {
+                Layout.fillWidth: true
+                Layout.topMargin: Style.spacing.sm
+                Layout.bottomMargin: Style.spacing.sm
+                Layout.leftMargin: Style.spacing.xl
+                Layout.rightMargin: Style.spacing.xl
+              }
+
+              PanelSectionHeader {
+                text: "Animations"
+                Layout.leftMargin: Style.spacing.xl
+              }
+
+              Repeater {
+                model: root.animationNames
+
+                delegate: SidebarRow {
+                  required property string modelData
+
+                  Layout.fillWidth: true
+                  Layout.leftMargin: Style.spacing.md
+                  Layout.rightMargin: Style.spacing.md
+                  title: root.schemaFor(modelData) && root.schemaFor(modelData).title
+                    ? root.schemaFor(modelData).title : ParamMeta.formatLabel(modelData)
+                  subtitle: root.sidebarSubtitle(modelData)
+                  selected: root.selection === modelData
+                  dimmed: root.entryFor(modelData).enabled === false
+                  onClicked: root.selection = modelData
+                }
+              }
+
+              Item { Layout.preferredHeight: Style.spacing.lg }
+            }
           }
         }
-      }
 
-      Rectangle {
-        visible: !window.narrow
-        Layout.fillHeight: true
-        Layout.preferredWidth: Style.normalBorderWidth
-        color: Color.muted
-        opacity: 0.25
-      }
+        Rectangle {
+          visible: !window.narrow
+          Layout.fillHeight: true
+          Layout.preferredWidth: Style.normalBorderWidth
+          color: Color.muted
+          opacity: 0.25
+        }
 
-      // ------------------------------------------------------------- detail
-      Item {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        visible: !window.narrow || root.selection !== ""
+        // ------------------------------------------------------------- detail
+        Item {
+          Layout.fillWidth: true
+          Layout.fillHeight: true
+          visible: !window.narrow || root.selection !== ""
 
-        ScrollView {
-          id: detailScroll
-          anchors.fill: parent
-          contentWidth: availableWidth
-          clip: true
+          ScrollView {
+            id: detailScroll
+            anchors.fill: parent
+            contentWidth: availableWidth
+            clip: true
 
-          ColumnLayout {
-            // Binding to the ScrollView's availableWidth (rather than
-            // parent.width) is what makes the pane reflow when the window
-            // is resized.
-            width: detailScroll.availableWidth
-            spacing: Style.spacing.lg
+            ColumnLayout {
+              // Binding to the ScrollView's availableWidth (rather than
+              // parent.width) is what makes the pane reflow when the window
+              // is resized.
+              width: detailScroll.availableWidth
+              spacing: Style.spacing.lg
 
-            Item { Layout.preferredHeight: Style.spacing.md }
+              Item { Layout.preferredHeight: Style.spacing.md }
 
-            Button {
-              Layout.leftMargin: Style.spacing.xl
-              visible: window.narrow
-              text: "Back"
-              onClicked: root.selection = ""
-            }
-
-            WelcomePane {
-              Layout.fillWidth: true
-              Layout.maximumWidth: Style.space(680)
-              Layout.leftMargin: Style.spacing.xl
-              Layout.rightMargin: Style.spacing.xl
-              visible: root.selection === ""
-              animationCount: root.animationNames.length
-              enabledCount: root.enabledCount()
-              marketplaceCount: root.marketplaceInstalledCount
-              mode: root.persistedConfig.mode || "random"
-            }
-
-            GeneralDetail {
-              Layout.fillWidth: true
-              Layout.maximumWidth: Style.space(680)
-              Layout.leftMargin: Style.spacing.xl
-              Layout.rightMargin: Style.spacing.xl
-              visible: root.selection === "general"
-              screensaverEnabled: root.persistedConfig.enabled !== false
-              mode: root.persistedConfig.mode || "random"
-              selectedAnimation: root.persistedConfig.selectedAnimation || "terrarium"
-              animationOptions: root.animationNames
-              barIconEnabled: root.persistedConfig.showBarIcon !== false
-              screensaverDelaySeconds: root.persistedConfig.screensaverDelaySeconds !== undefined
-                ? root.persistedConfig.screensaverDelaySeconds : 150
-              lockDelaySeconds: root.persistedConfig.lockDelaySeconds !== undefined
-                ? root.persistedConfig.lockDelaySeconds : 300
-
-              onEnabledToggled: function (value) {
-                root.persistedConfig.enabled = value
-                root.commit()
+              Button {
+                Layout.leftMargin: Style.spacing.xl
+                visible: window.narrow
+                text: "Back"
+                onClicked: root.selection = ""
               }
-              onModeSelected: function (value) {
-                root.persistedConfig.mode = value
-                root.commit()
+
+              WelcomePane {
+                Layout.fillWidth: true
+                Layout.maximumWidth: Style.space(680)
+                Layout.leftMargin: Style.spacing.xl
+                Layout.rightMargin: Style.spacing.xl
+                visible: root.selection === ""
+                animationCount: root.animationNames.length
+                enabledCount: root.enabledCount()
+                marketplaceCount: root.marketplaceInstalledCount
+                mode: root.persistedConfig.mode || "random"
               }
-              onAnimationSelected: function (value) {
-                root.persistedConfig.selectedAnimation = value
-                root.commit()
-              }
-              onScreensaverDelayChanged: function (seconds) {
-                root.persistedConfig.screensaverDelaySeconds = seconds
-                root.commit()
-              }
-              onLockDelayChanged: function (seconds) {
-                root.persistedConfig.lockDelaySeconds = seconds
-                root.commit()
-              }
-              onBarIconToggled: function (value) {
-                root.persistedConfig.showBarIcon = value
-                root.commit()
-              }
-              onPreviewRequested: Quickshell.execDetached(["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force"])
-            }
 
+              GeneralDetail {
+                Layout.fillWidth: true
+                Layout.maximumWidth: Style.space(680)
+                Layout.leftMargin: Style.spacing.xl
+                Layout.rightMargin: Style.spacing.xl
+                visible: root.selection === "general"
+                screensaverEnabled: root.persistedConfig.enabled !== false
+                mode: root.persistedConfig.mode || "random"
+                selectedAnimation: root.persistedConfig.selectedAnimation || "terrarium"
+                animationOptions: root.animationNames
+                barIconEnabled: root.persistedConfig.showBarIcon !== false
+                screensaverDelaySeconds: root.persistedConfig.screensaverDelaySeconds !== undefined
+                  ? root.persistedConfig.screensaverDelaySeconds : 150
+                lockDelaySeconds: root.persistedConfig.lockDelaySeconds !== undefined
+                  ? root.persistedConfig.lockDelaySeconds : 300
 
-            AnimationDetail {
-              Layout.fillWidth: true
-              Layout.maximumWidth: Style.space(680)
-              Layout.leftMargin: Style.spacing.xl
-              Layout.rightMargin: Style.spacing.xl
-              visible: root.selection !== "" && root.selection !== "general" && root.selection !== "marketplace"
-              animationName: root.selection
-              isUserInstalled: root.userSchema[root.selection] !== undefined
-              onUninstallRequested: root.uninstallAnimation(root.selection)
-              animationSchema: root.schemaFor(root.selection) || ({ title: root.selection, params: ({}) })
-              entry: root.entryFor(root.selection)
-              randomMode: root.randomMode
-
-              onEnabledToggled: function (value) { root.setAnimationEnabled(root.selection, value) }
-              onWeightChanged: function (weight) { root.setAnimationWeight(root.selection, weight) }
-              onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
-              onPreviewRequested: Quickshell.execDetached(
-
-                ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
-            }
-
-            MarketplaceTab {
-              Layout.fillWidth: true
-              Layout.fillHeight: true
-              visible: root.selection === "marketplace"
-              installedIds: root.animationNames
-              builtinIds: Object.keys(root.schema)
-              userAnimationsDir: ConfigPaths.userAnimationsDir()
-
-              onAnimationInstalled: function(animId, schemaEntry) {
-                // schemaEntry is null when animId is a built-in being
-                // un-hidden rather than a real marketplace download.
-                if (schemaEntry === null) {
-                  root.reinstallBuiltin(animId)
-                  return
+                onEnabledToggled: function (value) {
+                  root.persistedConfig.enabled = value
+                  root.commit()
                 }
-                var updated = Object.assign({}, root.userSchema)
-                updated[animId] = schemaEntry
-                root.userSchema = updated
-                root.ensureEntry(animId)
-                root.commit()
+                onModeSelected: function (value) {
+                  root.persistedConfig.mode = value
+                  root.commit()
+                }
+                onAnimationSelected: function (value) {
+                  root.persistedConfig.selectedAnimation = value
+                  root.commit()
+                }
+                onScreensaverDelayChanged: function (seconds) {
+                  root.persistedConfig.screensaverDelaySeconds = seconds
+                  root.commit()
+                }
+                onLockDelayChanged: function (seconds) {
+                  root.persistedConfig.lockDelaySeconds = seconds
+                  root.commit()
+                }
+                onBarIconToggled: function (value) {
+                  root.persistedConfig.showBarIcon = value
+                  root.commit()
+                }
+                onPreviewRequested: Quickshell.execDetached(["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force"])
               }
-              onAnimationUninstalled: function(animId) {
-                root.uninstallAnimation(animId)
+
+
+              AnimationDetail {
+                Layout.fillWidth: true
+                Layout.maximumWidth: Style.space(680)
+                Layout.leftMargin: Style.spacing.xl
+                Layout.rightMargin: Style.spacing.xl
+                visible: root.selection !== "" && root.selection !== "general" && root.selection !== "marketplace"
+                animationName: root.selection
+                isUserInstalled: root.userSchema[root.selection] !== undefined
+                onUninstallRequested: root.uninstallAnimation(root.selection)
+                animationSchema: root.schemaFor(root.selection) || ({ title: root.selection, params: ({}) })
+                entry: root.entryFor(root.selection)
+                randomMode: root.randomMode
+
+                onEnabledToggled: function (value) { root.setAnimationEnabled(root.selection, value) }
+                onWeightChanged: function (weight) { root.setAnimationWeight(root.selection, weight) }
+                onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
+                onPreviewRequested: Quickshell.execDetached(
+
+                  ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
               }
+
+              MarketplaceTab {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                visible: root.selection === "marketplace"
+                installedIds: root.animationNames
+                builtinIds: Object.keys(root.schema)
+                userAnimationsDir: ConfigPaths.userAnimationsDir()
+
+                onAnimationInstalled: function(animId, schemaEntry) {
+                  // schemaEntry is null when animId is a built-in being
+                  // un-hidden rather than a real marketplace download.
+                  if (schemaEntry === null) {
+                    root.reinstallBuiltin(animId)
+                    return
+                  }
+                  var updated = Object.assign({}, root.userSchema)
+                  updated[animId] = schemaEntry
+                  root.userSchema = updated
+                  root.ensureEntry(animId)
+                  root.commit()
+                }
+                onAnimationUninstalled: function(animId) {
+                  root.uninstallAnimation(animId)
+                }
+              }
+
+
+              Item { Layout.preferredHeight: Style.spacing.xl }
             }
-
-
-            Item { Layout.preferredHeight: Style.spacing.xl }
           }
         }
       }
