@@ -20,6 +20,7 @@ Item {
   readonly property string schemaPath: root.pluginDir + "/params.schema.json"
 
   property var schema: ({})
+  property var userSchema: ({})
   property var persistedConfig: ({ enabled: true, mode: "random", selectedAnimation: "terrarium", animations: [] })
   property bool configLoaded: false
 
@@ -27,7 +28,19 @@ Item {
   // is an animation name.
   property string selection: ""
 
-  readonly property var animationNames: Object.keys(root.schema)
+  readonly property var animationNames: {
+    var builtIn = Object.keys(root.schema)
+    var user = Object.keys(root.userSchema)
+    var all = builtIn.slice()
+    for (var i = 0; i < user.length; i++) {
+      if (all.indexOf(user[i]) === -1) all.push(user[i])
+    }
+    return all
+  }
+
+  function schemaFor(name) {
+    return root.schema[name] || root.userSchema[name] || ({ title: name, params: ({}) })
+  }
   readonly property bool randomMode: root.persistedConfig.mode !== "single"
 
   // A payload of {"select": "bonsai"} opens straight to that animation,
@@ -79,6 +92,7 @@ Item {
       console.warn("ascii-screensaver Panel.qml: failed to parse config:", e)
     }
     root.configLoaded = true
+    userAnimLoader.scan()
   }
 
   // Read-only lookup. Bindings call this, so it must never mutate the
@@ -121,8 +135,24 @@ Item {
     commit()
   }
 
+  function uninstallAnimation(name) {
+    var list = root.persistedConfig.animations || []
+    var filtered = []
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].name !== name) filtered.push(list[i])
+    }
+    root.persistedConfig.animations = filtered
+    if (root.userSchema[name] !== undefined) {
+      var newUserSchema = Object.assign({}, root.userSchema)
+      delete newUserSchema[name]
+      root.userSchema = newUserSchema
+    }
+    if (root.selection === name) root.selection = ""
+    root.commit()
+  }
+
   function paramCount(name) {
-    var definition = root.schema[name]
+    var definition = root.schemaFor(name)
     return definition && definition.params ? Object.keys(definition.params).length : 0
   }
 
@@ -255,8 +285,8 @@ Item {
                 Layout.fillWidth: true
                 Layout.leftMargin: Style.spacing.md
                 Layout.rightMargin: Style.spacing.md
-                title: root.schema[modelData] && root.schema[modelData].title
-                  ? root.schema[modelData].title : ParamMeta.formatLabel(modelData)
+                title: root.schemaFor(modelData) && root.schemaFor(modelData).title
+                  ? root.schemaFor(modelData).title : ParamMeta.formatLabel(modelData)
                 subtitle: root.sidebarSubtitle(modelData)
                 selected: root.selection === modelData
                 dimmed: root.entryFor(modelData).enabled === false
@@ -367,7 +397,7 @@ Item {
               Layout.rightMargin: Style.spacing.xl
               visible: root.selection !== "" && root.selection !== "general"
               animationName: root.selection
-              animationSchema: root.schema[root.selection] || ({ title: root.selection, params: ({}) })
+              animationSchema: root.schemaFor(root.selection) || ({ title: root.selection, params: ({}) })
               entry: root.entryFor(root.selection)
               randomMode: root.randomMode
 
