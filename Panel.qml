@@ -425,6 +425,25 @@ Item {
               onWeightChanged: function (weight) { root.setAnimationWeight(root.selection, weight) }
               onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
               onPreviewRequested: Quickshell.execDetached(
+
+            MarketplaceTab {
+              Layout.fillWidth: true
+              Layout.fillHeight: true
+              visible: root.selection === "marketplace"
+              installedIds: root.animationNames
+              userAnimationsDir: ConfigPaths.userAnimationsDir()
+
+              onAnimationInstalled: function(animId, schemaEntry) {
+                var updated = Object.assign({}, root.userSchema)
+                updated[animId] = schemaEntry
+                root.userSchema = updated
+                root.ensureEntry(animId)
+                root.commit()
+              }
+              onAnimationUninstalled: function(animId) {
+                root.uninstallAnimation(animId)
+              }
+            }
                 ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
             }
 
