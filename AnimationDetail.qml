@@ -13,6 +13,9 @@ ColumnLayout {
   property var animationSchema: ({})
   property var entry: ({})
   property bool randomMode: true
+  property bool isUserInstalled: false
+
+  signal uninstallRequested()
 
   readonly property var paramNames: animationSchema && animationSchema.params
     ? Object.keys(animationSchema.params) : []
@@ -56,6 +59,28 @@ ColumnLayout {
     Text {
       Layout.fillWidth: true
       text: "Plays full screen with the settings below, even while it is switched off."
+      color: Color.muted
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+      wrapMode: Text.WordWrap
+    }
+  }
+
+  RowLayout {
+    Layout.fillWidth: true
+    spacing: Style.spacing.lg
+    visible: true  // shown for ALL animations
+
+    Button {
+      text: "Uninstall animation"
+      onClicked: root.uninstallRequested()
+    }
+
+    Text {
+      Layout.fillWidth: true
+      text: root.isUserInstalled
+        ? "Removes this animation from your panel and rotation. Files stay on disk."
+        : "Removes this animation from your panel and rotation. Re-install it from the Marketplace tab."
       color: Color.muted
       font.family: Style.font.family
       font.pixelSize: Style.font.caption

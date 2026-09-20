@@ -397,6 +397,8 @@ Item {
               Layout.rightMargin: Style.spacing.xl
               visible: root.selection !== "" && root.selection !== "general"
               animationName: root.selection
+              isUserInstalled: root.userSchema[root.selection] !== undefined
+              onUninstallRequested: root.uninstallAnimation(root.selection)
               animationSchema: root.schemaFor(root.selection) || ({ title: root.selection, params: ({}) })
               entry: root.entryFor(root.selection)
               randomMode: root.randomMode
