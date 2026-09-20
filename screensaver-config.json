@@ -1,35 +1,35 @@
 {
   "enabled": true,
   "mode": "random",
-  "selectedAnimation": "terrarium",
+  "selectedAnimation": "bonsai",
   "animations": [
     {
       "name": "bonsai",
       "enabled": true,
-      "weight": 9,
+      "weight": 1,
       "params": {
-        "speed": 0.5,
-        "palette": "purple",
+        "speed": 1,
+        "palette": "natural",
         "leafDensity": 1,
-        "holdTime": 480
+        "holdTime": 300
       }
     },
     {
       "name": "moon",
       "enabled": true,
-      "weight": 0,
+      "weight": 1,
       "params": {
-        "speed": 0.7,
+        "speed": 1,
         "palette": "silver",
-        "stars": 270,
+        "stars": 200,
         "floaterFreq": 1,
-        "glowIntensity": 1.8
+        "glowIntensity": 1
       }
     },
     {
       "name": "crawl",
       "enabled": true,
-      "weight": 0,
+      "weight": 1,
       "params": {
         "speed": 1,
         "palette": "gold",
@@ -39,25 +39,25 @@
     {
       "name": "blackhole",
       "enabled": true,
-      "weight": 0,
+      "weight": 1,
       "params": {
         "speed": 1,
         "palette": "fire",
         "diskSize": 1,
         "jets": 1,
-        "inclination": 0.36
+        "inclination": 0.5
       }
     },
     {
       "name": "nixie",
       "enabled": true,
-      "weight": 9,
+      "weight": 1,
       "params": {
-        "glowColor": "purple",
+        "glowColor": "orange",
         "flickerIntensity": 1,
-        "poisoningSpeed": 1.5,
+        "poisoningSpeed": 1,
         "showSeconds": 1,
-        "tubeStyle": "wide",
+        "tubeStyle": "classic",
         "tubeColons": 1
       }
     },
@@ -66,8 +66,8 @@
       "enabled": true,
       "weight": 1,
       "params": {
-        "speed": 0.5,
-        "palette": "southern",
+        "speed": 1,
+        "palette": "northern",
         "bands": 3,
         "brightness": 1,
         "stars": 150
@@ -76,7 +76,7 @@
     {
       "name": "mandelbrot",
       "enabled": true,
-      "weight": 0,
+      "weight": 1,
       "params": {
         "speed": 1,
         "palette": "classic",
@@ -88,23 +88,23 @@
     {
       "name": "pipes",
       "enabled": true,
-      "weight": 9,
+      "weight": 1,
       "params": {
-        "speed": 0.2,
+        "speed": 1,
         "palette": "green",
         "density": 1,
         "fading": 1,
-        "spawnRate": 0.2
+        "spawnRate": 1
       }
     },
     {
       "name": "fluid",
       "enabled": true,
-      "weight": 0,
+      "weight": 1,
       "params": {
-        "speed": 1.8,
+        "speed": 1,
         "palette": "plasma",
-        "resolution": "ultra",
+        "resolution": "medium",
         "diffusion": 0.0006,
         "viscosity": 0,
         "dyeFade": 0.984
@@ -113,26 +113,26 @@
     {
       "name": "thunderstorm",
       "enabled": true,
-      "weight": 9,
+      "weight": 1,
       "params": {
-        "intensity": 0.7,
-        "wind": 0.75,
-        "lightning": 1.2,
+        "intensity": 1,
+        "wind": 1,
+        "lightning": 1,
         "palette": "tempest"
       }
     },
     {
       "name": "incense",
       "enabled": true,
-      "weight": 9,
+      "weight": 1,
       "params": {
-        "speed": 0.9,
-        "smokeDensity": 1.5,
-        "smokeLifespan": 2.8,
-        "smokeColor": "sage",
+        "speed": 1,
+        "smokeDensity": 1,
+        "smokeLifespan": 2,
+        "smokeColor": "white",
         "windDirection": 0.5,
-        "windSpeed": 0.9,
-        "randomization": 2
+        "windSpeed": 1,
+        "randomization": 1
       }
     },
     {
@@ -153,14 +153,14 @@
       "enabled": true,
       "weight": 1,
       "params": {
-        "speed": 0.5,
+        "speed": 1,
         "planetColor": "earth",
-        "planetSize": 1.35,
-        "rings": 0,
-        "atmosphereColor": "violet",
+        "planetSize": 1,
+        "rings": 1,
+        "atmosphereColor": "blue",
         "atmosphereDensity": 1,
-        "atmosphereTurbulence": 0.6,
-        "atmosphereDirection": 0.3,
+        "atmosphereTurbulence": 1,
+        "atmosphereDirection": 0.5,
         "aurora": 1
       }
     },
@@ -191,15 +191,15 @@
     {
       "name": "boids",
       "enabled": true,
-      "weight": 2,
+      "weight": 1,
       "params": {
         "speed": 1,
         "palette": "birds",
         "flockSize": 60,
         "cohesion": 1,
         "separation": 1,
-        "predator": 0,
-        "predatorSpeed": 1.35
+        "predator": 1,
+        "predatorSpeed": 1
       }
     },
     {
@@ -214,7 +214,7 @@
         "gustFrequency": 1.0,
         "doublePendulum": 0,
         "soundType": "bell",
-        "pitch": 2.0
+        "pitch": 1.0
       }
     },
     {
@@ -259,7 +259,7 @@
       "params": {
         "speed": 1.0,
         "palette": "mossy",
-        "plantDensity": 3,
+        "plantDensity": 1,
         "condensation": 1.0,
         "growthCycle": "loop",
         "cycleTime": 8.0,
@@ -320,7 +320,7 @@
       "name": "pendulum_wave",
       "enabled": true,
       "weight": 1,
-      "params": { "speed": 0.25, "palette": "spectrum", "pendulumCount": 18, "cycleTime": 8.0, "swingAngle": 0.4 }
+      "params": { "speed": 1.0, "palette": "spectrum", "pendulumCount": 18, "cycleTime": 8.0, "swingAngle": 0.4 }
     },
     {
       "name": "glitch_field",
@@ -339,6 +339,12 @@
       "enabled": true,
       "weight": 1,
       "params": { "speed": 1.0, "cycleTime": 30, "trailLength": 800, "rotationSpeed": 0.1, "palette": "ice" }
+    },
+    {
+      "name": "crystals",
+      "enabled": true,
+      "weight": 1,
+      "params": { "speed": 1.0, "palette": "cave", "growthRate": 1.0, "poolGlow": 1.0 }
     }
   ]
 }

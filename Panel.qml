@@ -28,8 +28,13 @@ Item {
   // is an animation name.
   property string selection: ""
 
+  // Built-ins have no on-disk install to remove, so "uninstalling" one just
+  // hides it here; the Marketplace's Install button un-hides it again.
+  readonly property var removedBuiltins: root.persistedConfig.removedBuiltins || []
+
   readonly property var animationNames: {
-    var builtIn = Object.keys(root.schema)
+    var removed = root.removedBuiltins
+    var builtIn = Object.keys(root.schema).filter(function(name) { return removed.indexOf(name) === -1 })
     var user = Object.keys(root.userSchema)
     var all = builtIn.slice()
     for (var i = 0; i < user.length; i++) {
@@ -142,13 +147,48 @@ Item {
       if (list[i] && list[i].name !== name) filtered.push(list[i])
     }
     root.persistedConfig.animations = filtered
+    if (root.selection === name) root.selection = ""
+
     if (root.userSchema[name] !== undefined) {
+      // A real marketplace install: drop the schema entry and delete the
+      // files it downloaded. Guard against a hostile/garbled name ever
+      // turning into a path that escapes the animations directory.
       var newUserSchema = Object.assign({}, root.userSchema)
       delete newUserSchema[name]
       root.userSchema = newUserSchema
+      if (/^[A-Za-z0-9_-]+$/.test(name)) {
+        // commit() is deferred to onExited: saving the config triggers its
+        // own FileView's change-watcher, which rescans the user animations
+        // directory — if that rescan ran before this deletion finished, it
+        // would find the (still-present) manifest and silently re-add the
+        // entry we're in the middle of removing.
+        uninstallFilesProcess.command = ["rm", "-rf", ConfigPaths.userAnimationsDir() + "/" + name]
+        uninstallFilesProcess.running = true
+        return
+      }
+    } else if (root.schema[name] !== undefined) {
+      // A built-in: nothing on disk to remove, so just hide it from the
+      // panel. Installing the same id again from the Marketplace un-hides it.
+      if (root.removedBuiltins.indexOf(name) === -1) {
+        root.persistedConfig.removedBuiltins = root.removedBuiltins.concat([name])
+      }
     }
-    if (root.selection === name) root.selection = ""
     root.commit()
+  }
+
+  // Installing a marketplace entry whose id matches a built-in just
+  // un-hides the built-in (see uninstallAnimation) instead of downloading
+  // a shadowed duplicate copy of it.
+  function reinstallBuiltin(name) {
+    if (root.removedBuiltins.indexOf(name) === -1) return
+    root.persistedConfig.removedBuiltins = root.removedBuiltins.filter(function(n) { return n !== name })
+    root.commit()
+  }
+
+  Process {
+    id: uninstallFilesProcess
+    running: false
+    onExited: function(code, signal) { root.commit() }
   }
 
   function paramCount(name) {
@@ -444,9 +484,16 @@ Item {
               Layout.fillHeight: true
               visible: root.selection === "marketplace"
               installedIds: root.animationNames
+              builtinIds: Object.keys(root.schema)
               userAnimationsDir: ConfigPaths.userAnimationsDir()
 
               onAnimationInstalled: function(animId, schemaEntry) {
+                // schemaEntry is null when animId is a built-in being
+                // un-hidden rather than a real marketplace download.
+                if (schemaEntry === null) {
+                  root.reinstallBuiltin(animId)
+                  return
+                }
                 var updated = Object.assign({}, root.userSchema)
                 updated[animId] = schemaEntry
                 root.userSchema = updated

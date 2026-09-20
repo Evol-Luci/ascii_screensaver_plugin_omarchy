@@ -13,6 +13,11 @@ ColumnLayout {
 
   // Set by Panel.qml — the full list of animation IDs currently in the config
   property var installedIds: []
+  // Set by Panel.qml — animation IDs bundled with the plugin. The seed
+  // marketplace catalog mirrors these 1:1, so "installing" one of them has
+  // nothing to download — it just un-hides the bundled copy (see
+  // Panel.qml's reinstallBuiltin).
+  property var builtinIds: []
   // Set by Panel.qml — user animations dir path
   property string userAnimationsDir: ""
 
@@ -101,6 +106,10 @@ ColumnLayout {
   property var _installTarget: null
 
   function installAnimation(entry) {
+    if (root.builtinIds.indexOf(entry.id) !== -1) {
+      root.animationInstalled(entry.id, null)
+      return
+    }
     root._installTarget = entry
     root._installQueue = entry.files || []
     root._installQueueIndex = 0
@@ -129,10 +138,13 @@ ColumnLayout {
     xhr.onreadystatechange = function() {
       if (xhr.readyState !== XMLHttpRequest.DONE) return
       if (xhr.status === 200) {
-        writeProcess.dest = dest
-        writeProcess.content = xhr.responseText
-        writeProcess.callback = callback
-        writeProcess.running = true
+        mkdirProcess.destDir = dest.substring(0, dest.lastIndexOf("/"))
+        mkdirProcess.callback = function() {
+          writeFile.path = dest
+          writeFile.setText(xhr.responseText)
+          callback()
+        }
+        mkdirProcess.running = true
       } else {
         console.warn("MarketplaceTab: failed to download", url, xhr.status)
         callback()
@@ -141,19 +153,24 @@ ColumnLayout {
     xhr.send()
   }
 
+  // Only the directory is shelled out to mkdir -p; the downloaded content
+  // itself is written via FileView so it never passes through a shell
+  // string (a Process "stdin" property doesn't exist on Quickshell.Io.Process).
   Process {
-    id: writeProcess
-    property string dest: ""
-    property string content: ""
+    id: mkdirProcess
+    property string destDir: ""
     property var callback: null
-    command: ["bash", "-c",
-      "mkdir -p '" + dest.substring(0, dest.lastIndexOf("/")) + "' && " +
-      "cat > '" + dest + "'"]
+    command: ["mkdir", "-p", destDir]
     running: false
-    stdin: content
     onExited: function(code, signal) {
-      if (writeProcess.callback) writeProcess.callback()
+      if (mkdirProcess.callback) mkdirProcess.callback()
     }
+  }
+
+  FileView {
+    id: writeFile
+    watchChanges: false
+    printErrors: false
   }
 
   function _onInstallComplete() {
