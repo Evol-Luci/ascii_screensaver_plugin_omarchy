@@ -7,8 +7,9 @@ import qs.Commons
 import qs.Ui
 
 // Marketplace tab: browses and installs animations from the community repo.
-Item {
+ColumnLayout {
   id: root
+  spacing: 0
 
   // Set by Panel.qml — the full list of animation IDs currently in the config
   property var installedIds: []
@@ -95,10 +96,9 @@ Item {
   }
 
   // --- Install logic ---
-  // Downloads all files listed in the marketplace entry to userAnimationsDir.
   property var _installQueue: []
   property int _installQueueIndex: 0
-  property var _installTarget: null  // the marketplace entry being installed
+  property var _installTarget: null
 
   function installAnimation(entry) {
     root._installTarget = entry
@@ -158,7 +158,6 @@ Item {
 
   function _onInstallComplete() {
     var entry = root._installTarget
-    // Convert marketplace params array to schema entry
     var params = {}
     var paramsArr = entry.params || []
     for (var i = 0; i < paramsArr.length; i++) {
@@ -185,81 +184,61 @@ Item {
   }
 
   // --- UI ---
-  ColumnLayout {
-    anchors.fill: parent
-    spacing: 0
+  
+  // Toolbar
+  RowLayout {
+    Layout.fillWidth: true
+    Layout.topMargin: Style.spacing.lg
+    Layout.bottomMargin: Style.spacing.sm
+    spacing: Style.spacing.md
 
-    // Toolbar
-    RowLayout {
-      Layout.fillWidth: true
-      Layout.topMargin: Style.spacing.lg
-      Layout.leftMargin: Style.spacing.xl
-      Layout.rightMargin: Style.spacing.xl
-      Layout.bottomMargin: Style.spacing.sm
-      spacing: Style.spacing.md
-
-      PanelSectionHeader {
-        text: "Marketplace"
-      }
-
-      Item { Layout.fillWidth: true }
-
-      TextField {
-        id: searchField
-        placeholderText: "Search animations…"
-        Layout.preferredWidth: Style.space(200)
-        onTextChanged: root.filterText = text
-      }
-
-      Button {
-        text: root.fetchStatus === "loading" ? "Loading…" : "Refresh"
-        enabled: root.fetchStatus !== "loading"
-        onClicked: root.fetch()
-      }
+    PanelSectionHeader {
+      text: "Marketplace"
     }
 
-    // Status / error
-    Text {
-      Layout.fillWidth: true
-      Layout.leftMargin: Style.spacing.xl
-      Layout.rightMargin: Style.spacing.xl
-      visible: root.fetchStatus === "error"
-      text: root.fetchError
-      color: Color.muted
-      font.family: Style.font.family
-      font.pixelSize: Style.font.body
-      wrapMode: Text.WordWrap
+    Item { Layout.fillWidth: true }
+
+    TextField {
+      id: searchField
+      placeholderText: "Search animations…"
+      Layout.preferredWidth: Style.space(200)
+      onTextChanged: root.filterText = text
     }
 
-    // Animation cards
-    ScrollView {
-      Layout.fillWidth: true
-      Layout.fillHeight: true
-      contentWidth: availableWidth
-      clip: true
-      visible: root.fetchStatus === "ready"
+    Button {
+      text: root.fetchStatus === "loading" ? "Loading…" : "Refresh"
+      enabled: root.fetchStatus !== "loading"
+      onClicked: root.fetch()
+    }
+  }
 
-      Flow {
-        width: parent.width
-        padding: Style.spacing.xl
-        spacing: Style.spacing.md
+  // Status / error
+  Text {
+    Layout.fillWidth: true
+    visible: root.fetchStatus === "error"
+    text: root.fetchError
+    color: Color.muted
+    font.family: Style.font.family
+    font.pixelSize: Style.font.body
+    wrapMode: Text.WordWrap
+  }
 
-        Repeater {
-          model: root.filteredEntries
-          delegate: MarketplaceCard {
-            required property var modelData
-            entry: modelData
-            installed: root.isInstalled(modelData.id)
-            onInstallClicked: root.installAnimation(modelData)
-            onUninstallClicked: root.animationUninstalled(modelData.id)
-          }
-        }
+  // Animation cards (Flow without a nested ScrollView, so the outer panel ScrollView handles it)
+  Flow {
+    Layout.fillWidth: true
+    padding: Style.spacing.md
+    spacing: Style.spacing.md
+    visible: root.fetchStatus === "ready"
+
+    Repeater {
+      model: root.filteredEntries
+      delegate: MarketplaceCard {
+        required property var modelData
+        entry: modelData
+        installed: root.isInstalled(modelData.id)
+        onInstallClicked: root.installAnimation(modelData)
+        onUninstallClicked: root.animationUninstalled(modelData.id)
       }
-    }
-
-    Item {
-      Layout.fillHeight: true
-      visible: root.fetchStatus !== "ready"
     }
   }
 }
