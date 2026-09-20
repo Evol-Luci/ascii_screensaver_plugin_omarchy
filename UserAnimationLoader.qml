@@ -12,8 +12,27 @@ Item {
   signal manifestLoaded(string name, var schemaEntry)
   signal scanComplete()
 
+  // scan() runs on every config save (Panel.qml's commit() triggers its own
+  // config FileView reload, which calls scan() again) and can also be
+  // triggered twice back-to-back at startup (both the user and bundled
+  // config FileViews auto-load and each call this). Without a re-entrancy
+  // guard, two overlapping scans corrupt each other's shared pendingNames/
+  // loadIndex/currentName below — manifests silently get skipped or
+  // attributed to the wrong directory. A scan requested while one is
+  // already running is coalesced into a single follow-up pass instead.
+  property bool _scanning: false
+  property bool _rescanRequested: false
+
   function scan() {
     if (!animationsDir) return
+    if (root._scanning) {
+      root._rescanRequested = true
+      return
+    }
+    root._scanning = true
+    root._rescanRequested = false
+    pendingNames = []
+    loadIndex = 0
     listProcess.running = true
   }
 
@@ -39,24 +58,35 @@ Item {
 
   function loadNext() {
     if (loadIndex >= pendingNames.length) {
+      root._scanning = false
       root.scanComplete()
+      if (root._rescanRequested) root.scan()
       return
     }
     currentName = pendingNames[loadIndex]
     loadIndex++
-    manifestView.path = root.animationsDir + "/" + currentName + "/manifest.json"
-    manifestView.reload()
+    // A FileView reused across successive `path` reassignments only ever
+    // completed its *first* load in testing here — later reassignments
+    // silently never fired onLoaded or onLoadFailed, which is what made
+    // multi-animation scans stop after exactly one entry. `cat` via a
+    // reused Process (already proven reliable elsewhere in this plugin for
+    // sequential downloads/deletes) sidesteps that entirely.
+    manifestProcess.manifestName = currentName
+    manifestProcess.command = ["cat", root.animationsDir + "/" + currentName + "/manifest.json"]
+    manifestProcess.running = true
   }
 
-  FileView {
-    id: manifestView
-    path: ""
-    watchChanges: false
-    printErrors: false
-    onLoaded: {
+  Process {
+    id: manifestProcess
+    property string manifestName: ""
+    command: ["cat"]
+    running: false
+    stdout: StdioCollector { id: manifestCollector }
+    onExited: function(code, signal) {
+      var name = manifestProcess.manifestName
       try {
-        var manifest = JSON.parse(text())
-        if (manifest && manifest.id === root.currentName) {
+        var manifest = JSON.parse(manifestCollector.text)
+        if (manifest && manifest.id === name) {
           // Convert manifest params array to schema params object
           var params = {}
           var paramsArr = manifest.params || []
@@ -78,16 +108,13 @@ Item {
             _source: "user",
             _manifestVersion: manifest.version || "1.0.0",
             _author: manifest.author || "",
-            _preview: root.animationsDir + "/" + root.currentName + "/" + (manifest.preview || "")
+            _preview: root.animationsDir + "/" + name + "/" + (manifest.preview || "")
           }
-          root.manifestLoaded(root.currentName, schemaEntry)
+          root.manifestLoaded(name, schemaEntry)
         }
       } catch(e) {
-        console.warn("UserAnimationLoader: failed to parse manifest for", root.currentName, e)
+        console.warn("UserAnimationLoader: failed to parse manifest for", name, e)
       }
-      root.loadNext()
-    }
-    onLoadFailed: function(error) {
       root.loadNext()
     }
   }

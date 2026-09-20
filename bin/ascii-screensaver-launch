@@ -36,8 +36,10 @@ fi
 
 REQUESTED_ANIMATION="${2:-}"
 
+USER_ANIMATIONS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/ascii-screensaver/animations"
+
 if [[ -n "$REQUESTED_ANIMATION" ]]; then
-  if [[ ! -f "${PLUGIN_ROOT}/animations/${REQUESTED_ANIMATION}/index.html" ]]; then
+  if [[ ! -f "${PLUGIN_ROOT}/animations/${REQUESTED_ANIMATION}/index.html" ]] && [[ ! -f "${USER_ANIMATIONS_DIR}/${REQUESTED_ANIMATION}/index.html" ]]; then
     echo "ascii-screensaver-launch: unknown animation '${REQUESTED_ANIMATION}'" >&2
     exit 1
   fi
@@ -85,7 +87,7 @@ else
     fi
   fi
 
-  if [[ ! -f "${PLUGIN_ROOT}/animations/${ANIMATION}/index.html" ]]; then
+  if [[ ! -f "${PLUGIN_ROOT}/animations/${ANIMATION}/index.html" ]] && [[ ! -f "${USER_ANIMATIONS_DIR}/${ANIMATION}/index.html" ]]; then
     ANIMATION="terrarium"
   fi
 fi

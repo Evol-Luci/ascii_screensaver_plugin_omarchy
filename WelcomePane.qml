@@ -8,6 +8,7 @@ ColumnLayout {
 
   property int animationCount: 0
   property int enabledCount: 0
+  property int marketplaceCount: 0
   property string mode: "random"
 
   spacing: Style.spacing.lg
@@ -34,10 +35,20 @@ ColumnLayout {
 
   Text {
     Layout.fillWidth: true
-    text: root.enabledCount + " of " + root.animationCount + " animations enabled."
+    text: root.animationCount + " animations installed, " + root.enabledCount + " enabled."
     color: Color.muted
     font.family: Style.font.family
     font.pixelSize: Style.font.body
+    wrapMode: Text.WordWrap
+  }
+
+  Text {
+    Layout.fillWidth: true
+    text: root.marketplaceCount + " from the Marketplace, "
+      + (root.animationCount - root.marketplaceCount) + " built-in."
+    color: Color.muted
+    font.family: Style.font.family
+    font.pixelSize: Style.font.caption
     wrapMode: Text.WordWrap
   }
 

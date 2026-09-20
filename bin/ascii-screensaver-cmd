@@ -24,7 +24,12 @@ SCREENSAVER_CLASS="org.omarchy.screensaver"
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
+USER_ANIMATIONS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/ascii-screensaver/animations"
+
 ANIM_DIR="${PLUGIN_ROOT}/animations/${ANIMATION}/index.html"
+if [[ ! -f "$ANIM_DIR" ]]; then
+  ANIM_DIR="${USER_ANIMATIONS_DIR}/${ANIMATION}/index.html"
+fi
 
 if [[ ! -f "$ANIM_DIR" ]]; then
   echo "ascii-screensaver-cmd: unknown animation '${ANIMATION}'" >&2

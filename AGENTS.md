@@ -173,20 +173,121 @@ Plain QtQuick `Image` never animates GIFs — it only ever shows frame 0. Use
 a genuinely single-frame image, `AnimatedImage.frameCount` is `1`; there's
 nothing to "animate" but it still displays fine as a still.
 
-## The Marketplace's current catalog is 100% built-in overlap
+## The Marketplace's catalog is a mix of built-in-mirrored and genuinely new entries
 
-As of writing, every id in the remote marketplace index
-(`Evol-Luci/ascii-screensaver-animations`'s `index.json`) matches one of the
-30 animations already bundled in `params.schema.json`. There is currently no
-genuinely-external marketplace animation to test against. Don't assume "it's
-in the Marketplace list" means "it has files under
-`ConfigPaths.userAnimationsDir()`" — check `root.userSchema` (real
+The remote marketplace index (`Evol-Luci/ascii-screensaver-animations`'s
+`index.json`) originally launched as a 100%-overlap seed catalog — every id
+matched one of the 30 animations already bundled in `params.schema.json`.
+That's no longer true: genuinely new, marketplace-only animations (e.g.
+`dna`, `fireworks`, `galaxy`, `matrix`, `ocean`) have since been submitted
+and merged. Don't assume "it's in the Marketplace list" means "it has files
+under `ConfigPaths.userAnimationsDir()`" — check `root.userSchema` (real
 marketplace-downloaded entries) vs `root.schema` (bundled built-ins).
 `Panel.qml`'s `schemaFor()` prefers `root.schema` over `root.userSchema`, so
 a marketplace "install" of an id that's also built-in doesn't actually take
 effect visually even if it downloads files — which is why `Panel.qml` special
 -cases these (see `reinstallBuiltin` / `builtinIds`) instead of doing a real
 download for them.
+
+`Panel.qml`'s welcome pane shows `<N> animations installed, <N> enabled` and
+a `<N> from the Marketplace, <N> built-in` breakdown
+(`root.marketplaceInstalledCount = Object.keys(root.userSchema).length`).
+Check this whenever debugging "why didn't my installed animation stick
+around" — it tells you immediately whether an id ended up in `userSchema` at
+all, without needing to inspect `screensaver-config.json` by hand. When
+these two counts didn't match what was actually on disk, it turned out to be
+two separate concurrency bugs (below) — **not** a hardcoded animation-count
+cap. There is no cap anywhere in this codebase; if the numbers look
+suspiciously close to 30, check `params.schema.json`'s key count before
+assuming a limit exists.
+
+## Shared mutable state across async operations is the #1 recurring bug class here
+
+Two separate, structurally identical bugs both produced the same user-visible
+symptom — "I installed 5 marketplace animations, only 1 (or a random subset)
+showed up, even after closing and reopening the panel" — and both had the
+same shape: **a single set of properties on a component's root reused as
+"the current operation's state," with no guard against a second call
+starting before the first one's async work (network request / process /
+file read) has finished.** Each new call silently clobbers the previous
+call's in-flight state. Neither failure logged an error — this class of bug
+is invisible in the journal; you have to trace the data flow by hand or add
+temporary `console.warn` tracing (see below).
+
+1. **`MarketplaceTab.qml`'s install pipeline** used single shared
+   `_installTarget` / `_installQueue` / `_installQueueIndex` properties.
+   Clicking "Install" on animation B while A's download was still in flight
+   overwrote A's queue/target with B's. Whichever install's file-queue
+   happened to empty out *last* won — `_onInstallComplete()` read the
+   now-current (possibly totally different) `_installTarget`, so multiple
+   installs could collapse into a single registered animation. Fixed by
+   giving each `installAnimation()` call its own job object
+   (`{entry, files, fileIndex}`) pushed onto a `_installJobs` queue,
+   processed one at a time (`_installBusy` gate) — no call ever shares
+   mutable state with another. If you add another async multi-step
+   operation here (batch uninstall, batch reinstall, etc.), reach for this
+   same per-job-queue shape from the start rather than a handful of shared
+   root properties.
+
+2. **`UserAnimationLoader.qml`'s `scan()`** had the same shape:
+   `pendingNames` / `loadIndex` / `currentName` shared across the whole
+   directory traversal, and `scan()` never reset `pendingNames`/`loadIndex`
+   at the start of a new run. `scan()` runs far more often than it looks
+   like it should: `Panel.qml`'s `commit()` writes the config file, which
+   (via `watchChanges: true` + `onFileChanged: reload()`) triggers its own
+   reload, which calls `parsePersistedConfig()`, which calls `scan()` again
+   — so installing N animations in a row could kick off N overlapping scans
+   of the same directory, each corrupting the others' traversal position.
+   It even showed up on a **single clean shell restart** with no rapid
+   clicking involved, because both of `Panel.qml`'s config `FileView`s
+   (`userConfigFile` and `bundledConfigFile`) auto-load at startup and each
+   independently calls `parsePersistedConfig()` → `scan()`. Fixed with an
+   explicit `_scanning` re-entrancy guard: a `scan()` call that arrives
+   while one is already running just sets `_rescanRequested = true` and
+   returns; the in-flight scan checks that flag when it finishes and
+   re-runs itself once, instead of the two interleaving.
+
+If you're chasing a bug where "N async operations were started but fewer
+than N distinct results ever land," suspect this pattern first: grep for
+properties declared once and reassigned from multiple call sites of an
+`async`-flavored function, with no per-call/per-job isolation.
+
+## `Quickshell.Io.FileView` reused across different `path` values is unreliable
+
+`UserAnimationLoader.qml` used to reuse one `FileView` instance across a
+whole directory scan — set `path` to the next manifest, call `.reload()`,
+handle `onLoaded`/`onLoadFailed`, repeat. **In testing here, this reliably
+completed the *first* file and then silently never fired `onLoaded` or
+`onLoadFailed` again for any subsequent path** — no error, no warning, the
+scan just stopped dead after one entry. This is *not* the same bug as the
+re-entrancy issue above (it reproduced even with the re-entrancy guard in
+place and only one scan ever running). Root cause not fully root-caused
+inside Quickshell itself — the fix was to stop relying on FileView for this
+and switch to a `Process` running `cat <path>` with a `stdout: StdioCollector`
+child, reading `manifestCollector.text` in `onExited`. `Process` reuse
+across many sequential invocations (`command` reassigned, `running` toggled
+back to `true`) has been reliable everywhere else in this plugin (downloads,
+`mkdir`, `rm`) — prefer it over reusing a `FileView` for "read N different
+files one after another" patterns. A `FileView` declared once with a
+`path` that's set **once** and left alone (like `Panel.qml`'s
+`schemaFile`/`userConfigFile`) is fine; it's specifically *reassigning
+`path` to switch to a different file on an existing instance* that broke
+here.
+
+## Debugging technique: temporary `console.warn` tracing beats guessing
+
+When a multi-step async chain silently produces fewer results than
+expected and the journal has zero errors or warnings, don't keep
+re-reading the code hoping to spot it — add `console.warn("TAG", ...)`
+at every step of the chain (function entry, each async callback, each
+branch of a conditional), sync, `omarchy restart shell`, reproduce, then
+`journalctl --user --since "10 sec ago" | grep TAG`. This is what
+surfaced the FileView bug above: the trace showed the chain calling
+`loadNext()` correctly, `manifestView.path`/`.reload()` being set correctly
+for the second entry, and then... nothing — no `onLoaded`, no
+`onLoadFailed`, ever, for that second call. That silence, not a stack trace,
+was the actual signal. Remove the tracing once you've found the bug — it's
+not meant to stay in the file.
 
 ## Config self-reload race
 
@@ -199,3 +300,33 @@ the user animations directory. If you need to delete files as part of an
 finish, e.g. a `Process.onExited` handler) **before** calling `commit()` —
 otherwise the self-triggered rescan can find the not-yet-deleted directory
 and silently re-add the very thing you're removing.
+
+## Anatomy of a marketplace animation
+When creating or validating animations for the marketplace, two easily missed requirements exist:
+1. **Valid Preview Images**: The `preview.gif` (or `.png`/`.jpg`) referenced in `manifest.json` MUST be a structurally valid binary image. Using a text file with dummy data (e.g., `echo "GIF89a" > preview.gif`) will silently break the Omarchy QML renderer and stop the marketplace UI from displaying properly.
+2. **Screensaver Dismiss Logic**: Animations do NOT close automatically. To respond to mouse and keyboard events when the screensaver runs, you MUST inject the following snippet at the bottom of the animation's `<script>` block:
+
+```javascript
+// ─── Screensaver Dismiss Logic ────────────────────────────────────────────────
+if (new URLSearchParams(window.location.search).get('screensaver') === '1') {
+    let armed = false;
+    setTimeout(() => { armed = true; }, 1500);
+    const dismiss = () => {
+        if (!armed) return;
+        try { window.close(); } catch(e) {}
+        document.body.innerHTML = '';
+        document.body.style.background = '#000';
+    };
+    window.addEventListener('keydown', dismiss);
+    window.addEventListener('mousedown', dismiss);
+    window.addEventListener('mousemove', (() => {
+        let lastX = -1, lastY = -1, moveCount = 0;
+        return (e) => {
+            if (lastX === -1) { lastX = e.clientX; lastY = e.clientY; return; }
+            if (e.clientX === lastX && e.clientY === lastY) return;
+            lastX = e.clientX; lastY = e.clientY;
+            if (++moveCount > 10) dismiss();
+        };
+    })());
+}
+```

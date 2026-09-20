@@ -31,11 +31,42 @@ ColumnLayout {
   property string fetchStatus: "idle"   // "idle" | "loading" | "error" | "ready"
   property string fetchError: ""
   property string filterText: ""
+  property string sortMode: "alpha" // "alpha", "newest", "random"
+  property var _randomPool: []
+
+  function showRandom() {
+    var pool = marketplaceEntries.slice()
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1))
+      var temp = pool[i]
+      pool[i] = pool[j]
+      pool[j] = temp
+    }
+    _randomPool = pool.slice(0, 10)
+    sortMode = "random"
+  }
 
   readonly property var filteredEntries: {
-    if (!filterText.trim()) return marketplaceEntries
+    var list = marketplaceEntries.slice()
+    
+    if (sortMode === "alpha") {
+      list.sort(function(a, b) {
+        var nameA = (a.name || "").toLowerCase()
+        var nameB = (b.name || "").toLowerCase()
+        if (nameA < nameB) return -1
+        if (nameA > nameB) return 1
+        return 0
+      })
+    } else if (sortMode === "newest") {
+      list.reverse()
+      list = list.slice(0, 10)
+    } else if (sortMode === "random") {
+      list = _randomPool
+    }
+
+    if (!filterText.trim()) return list
     var q = filterText.toLowerCase()
-    return marketplaceEntries.filter(function(e) {
+    return list.filter(function(e) {
       return (e.name || "").toLowerCase().indexOf(q) !== -1
         || (e.description || "").toLowerCase().indexOf(q) !== -1
         || (e.author || "").toLowerCase().indexOf(q) !== -1
@@ -101,80 +132,75 @@ ColumnLayout {
   }
 
   // --- Install logic ---
-  property var _installQueue: []
-  property int _installQueueIndex: 0
-  property var _installTarget: null
+  // Installs are queued and run one at a time. Each job owns its own entry
+  // and file-index instead of sharing them on `root` — installing several
+  // animations before the first one finishes used to overwrite that shared
+  // state, so only the last click's install ever actually completed (the
+  // others' downloads got silently reattributed to it or dropped).
+  property var _installJobs: []
+  property bool _installBusy: false
+  // Ids currently queued or downloading, so a card can show "Installing…"
+  // and a second click on the same card doesn't queue a redundant job.
+  property var installingIds: []
 
   function installAnimation(entry) {
     if (root.builtinIds.indexOf(entry.id) !== -1) {
       root.animationInstalled(entry.id, null)
       return
     }
-    root._installTarget = entry
-    root._installQueue = entry.files || []
-    root._installQueueIndex = 0
-    _downloadNext()
+    if (root.installingIds.indexOf(entry.id) !== -1) return
+    root.installingIds = root.installingIds.concat([entry.id])
+    root._installJobs.push({ entry: entry, files: entry.files || [], fileIndex: 0 })
+    if (!root._installBusy) _processNextJob()
   }
 
-  function _downloadNext() {
-    if (root._installQueueIndex >= root._installQueue.length) {
-      _onInstallComplete()
+  function _processNextJob() {
+    if (root._installJobs.length === 0) {
+      root._installBusy = false
       return
     }
-    var url = root._installQueue[root._installQueueIndex]
+    root._installBusy = true
+    _downloadNextFile(root._installJobs[0])
+  }
+
+  function _downloadNextFile(job) {
+    if (job.fileIndex >= job.files.length) {
+      _onInstallComplete(job.entry)
+      root._installJobs.shift()
+      root.installingIds = root.installingIds.filter(function(id) { return id !== job.entry.id })
+      _processNextJob()
+      return
+    }
+    var url = job.files[job.fileIndex]
     var filename = url.split("/").slice(-1)[0]
-    var destDir = root.userAnimationsDir + "/" + root._installTarget.id
+    var destDir = root.userAnimationsDir + "/" + job.entry.id
     var destPath = destDir + "/" + filename
     _downloadFile(url, destPath, function() {
-      root._installQueueIndex++
-      _downloadNext()
+      job.fileIndex++
+      _downloadNextFile(job)
     })
   }
 
   function _downloadFile(url, dest, callback) {
-    var xhr = new XMLHttpRequest()
-    xhr.open("GET", url, true)
-    xhr.responseType = "text"
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== XMLHttpRequest.DONE) return
-      if (xhr.status === 200) {
-        mkdirProcess.destDir = dest.substring(0, dest.lastIndexOf("/"))
-        mkdirProcess.callback = function() {
-          writeFile.path = dest
-          writeFile.setText(xhr.responseText)
-          callback()
-        }
-        mkdirProcess.running = true
-      } else {
-        console.warn("MarketplaceTab: failed to download", url, xhr.status)
-        callback()
-      }
-    }
-    xhr.send()
+    downloadProcess.url = url
+    downloadProcess.dest = dest
+    downloadProcess.callback = callback
+    downloadProcess.running = true
   }
 
-  // Only the directory is shelled out to mkdir -p; the downloaded content
-  // itself is written via FileView so it never passes through a shell
-  // string (a Process "stdin" property doesn't exist on Quickshell.Io.Process).
   Process {
-    id: mkdirProcess
-    property string destDir: ""
+    id: downloadProcess
+    property string url: ""
+    property string dest: ""
     property var callback: null
-    command: ["mkdir", "-p", destDir]
+    command: ["curl", "-sL", "--create-dirs", "-o", dest, url]
     running: false
     onExited: function(code, signal) {
-      if (mkdirProcess.callback) mkdirProcess.callback()
+      if (downloadProcess.callback) downloadProcess.callback()
     }
   }
 
-  FileView {
-    id: writeFile
-    watchChanges: false
-    printErrors: false
-  }
-
-  function _onInstallComplete() {
-    var entry = root._installTarget
+  function _onInstallComplete(entry) {
     var params = {}
     var paramsArr = entry.params || []
     for (var i = 0; i < paramsArr.length; i++) {
@@ -218,8 +244,29 @@ ColumnLayout {
     TextField {
       id: searchField
       placeholderText: "Search animations…"
-      Layout.preferredWidth: Style.space(200)
-      onTextChanged: root.filterText = text
+      Layout.preferredWidth: Style.space(160)
+      onTextChanged: {
+        root.filterText = text
+        if (text && root.sortMode !== "alpha") root.sortMode = "alpha"
+      }
+    }
+
+    Button {
+      text: "A-Z"
+      selected: root.sortMode === "alpha"
+      onClicked: root.sortMode = "alpha"
+    }
+
+    Button {
+      text: "10 Newest"
+      selected: root.sortMode === "newest"
+      onClicked: root.sortMode = "newest"
+    }
+
+    Button {
+      text: "Random 10"
+      selected: root.sortMode === "random"
+      onClicked: root.showRandom()
     }
 
     Button {
@@ -253,6 +300,7 @@ ColumnLayout {
         required property var modelData
         entry: modelData
         installed: root.isInstalled(modelData.id)
+        installing: root.installingIds.indexOf(modelData.id) !== -1
         onInstallClicked: root.installAnimation(modelData)
         onUninstallClicked: root.animationUninstalled(modelData.id)
       }

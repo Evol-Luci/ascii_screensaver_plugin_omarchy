@@ -214,6 +214,12 @@ Item {
     return total
   }
 
+  // How many of animationNames actually came from the Marketplace (real
+  // files on disk under userAnimationsDir), as opposed to being one of the
+  // bundled built-ins. Surfaced on the welcome pane so "I installed N
+  // animations" and "N are actually here" are both visible at a glance.
+  readonly property int marketplaceInstalledCount: Object.keys(root.userSchema).length
+
   FileView {
     id: schemaFile
     path: root.schemaPath
@@ -411,6 +417,7 @@ Item {
               visible: root.selection === ""
               animationCount: root.animationNames.length
               enabledCount: root.enabledCount()
+              marketplaceCount: root.marketplaceInstalledCount
               mode: root.persistedConfig.mode || "random"
             }
 

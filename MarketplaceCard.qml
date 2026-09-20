@@ -14,6 +14,7 @@ Rectangle {
 
   property var entry: ({})
   property bool installed: false
+  property bool installing: false
 
   signal installClicked()
   signal uninstallClicked()
@@ -139,7 +140,8 @@ Rectangle {
 
     Button {
       Layout.fillWidth: true
-      text: root.installed ? "Uninstall" : "Install"
+      text: root.installing ? "Installing…" : (root.installed ? "Uninstall" : "Install")
+      enabled: !root.installing
       onClicked: root.installed ? root.uninstallClicked() : root.installClicked()
     }
   }
