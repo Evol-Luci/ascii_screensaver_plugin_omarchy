@@ -544,3 +544,13 @@ The JetBrains Mono font loads from Google Fonts on first run. Ensure network acc
 
 **Chromium errors**
 Chromium stderr is logged to `$XDG_RUNTIME_DIR/ascii-screensaver/chromium-errors.log`. Check this file after a failed launch.
+
+**crystals**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `speed` | float 0.1–3.0 | `1.0` | Crystal growth and animation speed |
+| `palette` | string | `amethyst` | `amethyst` `quartz` `emerald` `obsidian` `ice` |
+| `poolGlow` | float 0.0–2.0 | `1.0` | Bioluminescent pool brightness |
+| `dripRate` | float 0.0–5.0 | `1.0` | Frequency of dripping stalactites |
+| `density` | float 0.2–2.0 | `1.0` | Abundance and reach of crystal formations |
