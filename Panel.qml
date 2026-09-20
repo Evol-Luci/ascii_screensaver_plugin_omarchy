@@ -203,6 +203,16 @@ Item {
     onFileChanged: reload()
   }
 
+  UserAnimationLoader {
+    id: userAnimLoader
+    animationsDir: ConfigPaths.userAnimationsDir()
+    onManifestLoaded: function(name, schemaEntry) {
+      var updated = Object.assign({}, root.userSchema)
+      updated[name] = schemaEntry
+      root.userSchema = updated
+    }
+  }
+
   FloatingWindow {
     id: window
     visible: false
