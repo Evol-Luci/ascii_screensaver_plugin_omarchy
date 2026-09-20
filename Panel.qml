@@ -271,6 +271,24 @@ Item {
               Layout.rightMargin: Style.spacing.xl
             }
 
+            SidebarRow {
+              Layout.fillWidth: true
+              Layout.leftMargin: Style.spacing.md
+              Layout.rightMargin: Style.spacing.md
+              title: "Marketplace"
+              subtitle: "Browse & install animations"
+              selected: root.selection === "marketplace"
+              onClicked: root.selection = "marketplace"
+            }
+
+            PanelSeparator {
+              Layout.fillWidth: true
+              Layout.topMargin: Style.spacing.sm
+              Layout.bottomMargin: Style.spacing.sm
+              Layout.leftMargin: Style.spacing.xl
+              Layout.rightMargin: Style.spacing.xl
+            }
+
             PanelSectionHeader {
               text: "Animations"
               Layout.leftMargin: Style.spacing.xl
@@ -395,7 +413,7 @@ Item {
               Layout.maximumWidth: Style.space(680)
               Layout.leftMargin: Style.spacing.xl
               Layout.rightMargin: Style.spacing.xl
-              visible: root.selection !== "" && root.selection !== "general"
+              visible: root.selection !== "" && root.selection !== "general" && root.selection !== "marketplace"
               animationName: root.selection
               isUserInstalled: root.userSchema[root.selection] !== undefined
               onUninstallRequested: root.uninstallAnimation(root.selection)
