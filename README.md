@@ -47,6 +47,7 @@ A modular, multi-animation ASCII screensaver plugin for [Omarchy](https://omarch
 | **glitch_field** | ![glitch_field](screenshots/glitch_field.gif) | A broken digital reality — a character grid torn by drifting corruption bands, RGB split, scanline tearing and packet loss. |
 | **cyber_deck** | ![cyber_deck](screenshots/cyber_deck.gif) | A fictional 1998 hacker terminal that never finishes booting — boot sequences, hex dumps, hardware diagrams, and glitches with occasional kernel panics. |
 | **attractor** | ![attractor](screenshots/attractor.gif) | A particle tracing a real Lorenz/Rössler strange-attractor equation as speed-weighted ASCII glyphs through a rotating 3D camera |
+| **crystals** | ![crystals](screenshots/crystals.gif) | Geological cave growth simulation with procedural stalactites, stalagmites, and a glowing bioluminescent pool. |
 
 ---
 
