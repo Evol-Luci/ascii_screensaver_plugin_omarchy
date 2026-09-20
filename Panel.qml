@@ -326,6 +326,7 @@ Item {
               mode: root.persistedConfig.mode || "random"
               selectedAnimation: root.persistedConfig.selectedAnimation || "terrarium"
               animationOptions: root.animationNames
+              barIconEnabled: root.persistedConfig.showBarIcon !== false
               screensaverDelaySeconds: root.persistedConfig.screensaverDelaySeconds !== undefined
                 ? root.persistedConfig.screensaverDelaySeconds : 150
               lockDelaySeconds: root.persistedConfig.lockDelaySeconds !== undefined
@@ -351,8 +352,13 @@ Item {
                 root.persistedConfig.lockDelaySeconds = seconds
                 root.commit()
               }
+              onBarIconToggled: function (value) {
+                root.persistedConfig.showBarIcon = value
+                root.commit()
+              }
               onPreviewRequested: Quickshell.execDetached(["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force"])
             }
+
 
             AnimationDetail {
               Layout.fillWidth: true

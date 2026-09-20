@@ -47,6 +47,7 @@ A modular, multi-animation ASCII screensaver plugin for [Omarchy](https://omarch
 | **glitch_field** | ![glitch_field](screenshots/glitch_field.gif) | A broken digital reality — a character grid torn by drifting corruption bands, RGB split, scanline tearing and packet loss. |
 | **cyber_deck** | ![cyber_deck](screenshots/cyber_deck.gif) | A fictional 1998 hacker terminal that never finishes booting — boot sequences, hex dumps, hardware diagrams, and glitches with occasional kernel panics. |
 | **attractor** | ![attractor](screenshots/attractor.gif) | A particle tracing a real Lorenz/Rössler strange-attractor equation as speed-weighted ASCII glyphs through a rotating 3D camera |
+| **crystals** | ![crystals](screenshots/crystals.gif) | Geological cave growth simulation with procedural stalactites, stalagmites, and a glowing bioluminescent pool. |
 
 ---
 
@@ -544,3 +545,13 @@ The JetBrains Mono font loads from Google Fonts on first run. Ensure network acc
 
 **Chromium errors**
 Chromium stderr is logged to `$XDG_RUNTIME_DIR/ascii-screensaver/chromium-errors.log`. Check this file after a failed launch.
+
+**crystals**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `speed` | float 0.1–3.0 | `1.0` | Crystal growth and animation speed |
+| `palette` | string | `amethyst` | `amethyst` `quartz` `emerald` `obsidian` `ice` |
+| `poolGlow` | float 0.0–2.0 | `1.0` | Bioluminescent pool brightness |
+| `dripRate` | float 0.0–5.0 | `1.0` | Frequency of dripping stalactites |
+| `density` | float 0.2–2.0 | `1.0` | Abundance and reach of crystal formations |
