@@ -83,6 +83,7 @@ Edit `screensaver-config.json` directly. The launcher reads it fresh on every ac
   "enabled": true,
   "mode": "random",
   "selectedAnimation": "crawl",
+  "showBarIcon": true,
   "animations": [ ... ]
 }
 ```
@@ -92,6 +93,7 @@ Edit `screensaver-config.json` directly. The launcher reads it fresh on every ac
 | `enabled` | `true`/`false` | Master kill switch |
 | `mode` | `"random"` / `"single"` | Random weighted pick or always use `selectedAnimation` |
 | `selectedAnimation` | animation name | Used only when `mode` is `"single"` |
+| `showBarIcon` | `true`/`false` | Whether to show the quick-access button in the bar |
 
 **Per-animation fields:**
 
@@ -427,6 +429,16 @@ Sound playback is a runtime-only toggle (press **M**), off by default; `soundTyp
 | `rotationSpeed` | float 0–0.5 | `0.1` | Camera rotation rate in radians/sec |
 | `palette` | string | `ice` | `ice` `ember` `spectrum` `mono` |
 
+**crystals**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `speed` | float 0.1–3.0 | `1.0` | Crystal growth and animation speed |
+| `palette` | string | `amethyst` | `amethyst` `quartz` `emerald` `obsidian` `ice` |
+| `poolGlow` | float 0.0–2.0 | `1.0` | Bioluminescent pool brightness |
+| `dripRate` | float 0.0–5.0 | `1.0` | Frequency of dripping stalactites |
+| `density` | float 0.2–2.0 | `1.0` | Abundance and reach of crystal formations |
+
 ---
 
 ## Installation
@@ -480,15 +492,19 @@ Quickshell was evaluated and crashes the shell — see
 
 The plugin ships a native settings panel (schema-driven, covers every
 animation's parameters, a timing section for the screensaver/lock delay,
-and a "Preview Now" button). Open it with:
+and a "Preview Now" button).
+
+The easiest way to open it is via the included bar widget — a quick-access
+monitor icon (󱄄) in your bar. If you find you don't use it often, you can
+hide the icon from inside the panel's General page.
+
+You can also open the panel directly from the terminal or a keybinding:
 
 ```bash
 omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'
 ```
 
-There's no bar-widget entry point by design — a bar icon wasn't wanted for
-a settings panel this infrequently used — and no built-in "browse all
-plugin panels" menu in Omarchy, so add a shortcut to your Omarchy menu by
+If you hide the bar icon and want to use the Omarchy menu instead, add a shortcut by
 putting this in `~/.config/omarchy/extensions/omarchy-menu.jsonc` (merged
 live with the system menu, no shell restart needed):
 
@@ -523,8 +539,8 @@ Previewing a named animation works from the command line too:
 ~/.config/omarchy/plugins/io.github.evol-luci.ascii-screensaver/bin/ascii-screensaver-launch force bonsai
 ```
 If you have the third-party Barkeep plugin installed, it can also summon
-this panel directly — but the `omarchy-shell summon`/menu-extension route
-above works without it.
+this panel directly — but the included bar widget and the `omarchy-shell summon`
+route above work without it.
 
 ### Migrating from the old AUR package
 
@@ -545,13 +561,3 @@ The JetBrains Mono font loads from Google Fonts on first run. Ensure network acc
 
 **Chromium errors**
 Chromium stderr is logged to `$XDG_RUNTIME_DIR/ascii-screensaver/chromium-errors.log`. Check this file after a failed launch.
-
-**crystals**
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| `speed` | float 0.1–3.0 | `1.0` | Crystal growth and animation speed |
-| `palette` | string | `amethyst` | `amethyst` `quartz` `emerald` `obsidian` `ice` |
-| `poolGlow` | float 0.0–2.0 | `1.0` | Bioluminescent pool brightness |
-| `dripRate` | float 0.0–5.0 | `1.0` | Frequency of dripping stalactites |
-| `density` | float 0.2–2.0 | `1.0` | Abundance and reach of crystal formations |
