@@ -1,10 +1,12 @@
 # ASCII Screensaver Ecosystem
 
+*Last updated: September 20, 2026*
+
 Welcome to the **ASCII Screensaver** for [Omarchy](https://omarchy.org).
 
-What started as a simple plugin has grown into a thriving ecosystem of community-built ASCII art animations. You can download and install community creations directly from the plugin's built-in **Marketplace**, or build and test your own animations instantly.
+We are launching a brand-new community **Marketplace** for ASCII animations, and we need your help to build it out! What started as a simple plugin is evolving into an open ecosystem where anyone can build, share, and install screensavers directly from inside Omarchy. 
 
-Whether you're a seasoned developer or just want to prompt an AI to build something cool for you, this guide has everything you need to create your own screensaver.
+Whether you're a seasoned developer or just want to prompt an AI to build something cool for you, this guide has everything you need to create your own screensaver and help us populate the new Marketplace.
 
 ---
 
@@ -28,7 +30,7 @@ Creating a custom animation is incredibly easy. The plugin is designed with a fr
 
 If you don't know HTML or JavaScript, you can just point an AI (like ChatGPT, Claude, or Gemini) at this very README. Give the AI this prompt:
 
-> "I want to build an animation for the Omarchy ASCII Screensaver plugin. Read the 'Anatomy of an Animation' section of their documentation below, and then write the complete `index.html` and `manifest.json` for a [YOUR IDEA HERE, e.g., falling matrix code] animation."
+> "I want to build an animation for the Omarchy ASCII Screensaver plugin. Read the 'Anatomy of an Animation' section of their documentation below, and then write the complete `index.html` and `manifest.json` for a [YOUR IDEA HERE, e.g., a retro telemetry display] animation."
 
 ### The Anatomy of an Animation
 
@@ -105,12 +107,12 @@ At the very top of your JavaScript, just read from it:
 ```
 
 ### Ideas to build!
-Need inspiration? Try building:
-- **Matrix Rain**: Classic falling green glyphs.
-- **Conway's Game of Life**: Cellular automata evolving in ASCII.
-- **Fluid Simulation**: Smoke or water simulated with character density.
-- **Audio Visualizers**: Bouncing bars or waveforms in pure text.
-- **Terminal Glitch**: A simulated cyberpunk OS crashing.
+Need inspiration? We've already built the classics (Matrix rain, fluid sims), so we're looking for fresh concepts! Try building around these broad themes:
+- **Generative & Algorithmic Art**: Fractals, recursive geometric patterns, or mathematical visualizers.
+- **Retro Tech & Nostalgia**: Simulated CRT monitor glitches, vintage telemetry displays, or retro operating system boot sequences.
+- **Nature & Organic Systems**: Cellular automata, weather simulations, or digital ecosystems simulating flocking and growth.
+- **Data & Cyberpunk**: Hacker interfaces, glowing network graphs, or cryptographic visualizers.
+- **Optical Illusions**: ASCII-based perspective tricks, infinite tunnels, or moiré patterns.
 
 ---
 
