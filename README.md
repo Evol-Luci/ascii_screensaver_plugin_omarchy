@@ -8,17 +8,22 @@ We are launching a brand-new community **Marketplace** for ASCII animations, and
 
 Whether you're a seasoned developer or just want to prompt an AI to build something cool for you, this guide has everything you need to create your own screensaver and help us populate the new Marketplace.
 
+![Welcome page](screenshots/config_00.png)
+![General settings](screenshots/config_02.png)
+
 ---
 
 ## The Marketplace
 
-The easiest way to get new animations is the Marketplace. 
+The easiest way to get new animations is the Marketplace.
 
 1. Open the ASCII Screensaver settings panel in Omarchy.
 2. Click the **Marketplace** tab in the sidebar.
 3. Browse, search, and click **Install** on any animation that catches your eye.
 
 The animation will instantly be downloaded and added to your active rotation.
+
+![Marketplace](screenshots/marketplace_00.png)
 
 ---
 
@@ -153,3 +158,5 @@ omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'
 ```
 
 From here, you can browse installed animations, tweak their weights/parameters, test them via the **Preview this animation** button, and browse the **Marketplace**.
+
+![Animation settings](screenshots/config_01.png)
