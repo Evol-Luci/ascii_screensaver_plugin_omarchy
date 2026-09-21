@@ -13,6 +13,27 @@ Whether you're a seasoned developer or just want to prompt an AI to build someth
 
 ---
 
+## Default Animations
+
+Ten flagship animations ship enabled out of the box, picked at random with equal weight:
+
+| Animation | Preview | Description |
+| --- | --- | --- |
+| **aquarium** | ![aquarium](screenshots/aquarium.gif) | A living reef: a fish school that schools, rests at night, flees a roaming predator, and swarms feeding events, under a day/night lighting cycle with sunbeams, bioluminescent plankton, swaying kelp, sand crabs, and an aerator stream. 5 palettes. |
+| **aurora** | ![aurora](screenshots/aurora.gif) | Procedural aurora borealis ribbons over a twinkling star field. 5 palettes, adjustable band count and brightness. |
+| **bonsai** | ![bonsai](screenshots/bonsai.gif) | Procedural bonsai tree that grows, holds, fades, and restarts. 6 palettes including natural, autumn, sakura, cherry, purple, and mono. |
+| **incense** | ![incense](screenshots/incense.gif) | Multi-stick incense altar with rising smoke particles, glow, ash, and sparks. 6 smoke-color palettes, wind controls. |
+| **nixie** | ![nixie](screenshots/nixie.gif) | Vintage nixie-tube clock with cathode poisoning, neon glow bloom, and per-tube flicker. Inspired by joeparadiso/nixie-tube-clock. |
+| **pendulum_wave** | ![pendulum_wave](screenshots/pendulum_wave.gif) | Pendulums of progressively shorter period swinging in and out of phase — travelling waves that periodically snap back into perfect sync. |
+| **pipes** | ![pipes](screenshots/pipes.gif) | Growing 3D-cylinder pipe network rendered with Unicode box-drawing characters. 5 palettes, adjustable density and spawn rate. |
+| **sandmandala** | ![sandmandala](screenshots/sandmandala.gif) | Procedural N-fold radial-symmetry sand mandala that builds grain-by-grain, holds, then dissolves and rebuilds with a new random pattern. 5 palettes. |
+| **terrarium** | ![terrarium](screenshots/terrarium.gif) | A living glass ecosystem: plants grow, seed, wilt, and decay into litter; fungi decompose it back into soil nutrients; a 3-tier animal food web (detritivores, leaf-grazing snails, a roaming centipede predator) and a foraging ant colony cycle through it — all coupled by closed water, nutrient, and light cycles under a day/night and seasonal rhythm. Nothing goes permanently extinct. 5 palettes. |
+| **thunderstorm** | ![thunderstorm](screenshots/thunderstorm.gif) | Dynamic rain, lightning bolts, and storm clouds in ASCII. 5 palettes, adjustable wind and lightning intensity. |
+
+That's just the start. 20 more built-in animations ship alongside these (installed but off by default), and a growing community **Marketplace** adds more all the time. Browse and enable anything from the sidebar or the Marketplace tab — see below.
+
+---
+
 ## The Marketplace
 
 The easiest way to get new animations is the Marketplace.
