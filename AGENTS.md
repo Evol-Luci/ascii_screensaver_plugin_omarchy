@@ -304,29 +304,4 @@ and silently re-add the very thing you're removing.
 ## Anatomy of a marketplace animation
 When creating or validating animations for the marketplace, two easily missed requirements exist:
 1. **Valid Preview Images**: The `preview.gif` (or `.png`/`.jpg`) referenced in `manifest.json` MUST be a structurally valid binary image. Using a text file with dummy data (e.g., `echo "GIF89a" > preview.gif`) will silently break the Omarchy QML renderer and stop the marketplace UI from displaying properly.
-2. **Screensaver Dismiss Logic**: Animations do NOT close automatically. To respond to mouse and keyboard events when the screensaver runs, you MUST inject the following snippet at the bottom of the animation's `<script>` block:
-
-```javascript
-// ─── Screensaver Dismiss Logic ────────────────────────────────────────────────
-if (new URLSearchParams(window.location.search).get('screensaver') === '1') {
-    let armed = false;
-    setTimeout(() => { armed = true; }, 1500);
-    const dismiss = () => {
-        if (!armed) return;
-        try { window.close(); } catch(e) {}
-        document.body.innerHTML = '';
-        document.body.style.background = '#000';
-    };
-    window.addEventListener('keydown', dismiss);
-    window.addEventListener('mousedown', dismiss);
-    window.addEventListener('mousemove', (() => {
-        let lastX = -1, lastY = -1, moveCount = 0;
-        return (e) => {
-            if (lastX === -1) { lastX = e.clientX; lastY = e.clientY; return; }
-            if (e.clientX === lastX && e.clientY === lastY) return;
-            lastX = e.clientX; lastY = e.clientY;
-            if (++moveCount > 10) dismiss();
-        };
-    })());
-}
-```
+2. **Screensaver Dismiss Logic**: You do **NOT** need to implement dismiss logic. The Omarchy screensaver plugin wraps all animations in a unified system viewer that captures mouse/keyboard activity and automatically tears down the process.
