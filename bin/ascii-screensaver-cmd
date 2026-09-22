@@ -36,11 +36,13 @@ if [[ ! -f "$ANIM_DIR" ]]; then
   exit 1
 fi
 
-# Build base URL
+# Build base URL pointing to viewer wrapper
+VIEWER_HTML="${PLUGIN_ROOT}/system/viewer.html"
+
 if [[ -n "${START_AT:-}" ]]; then
-  HTML_URL="file://${ANIM_DIR}?screensaver=1&startAt=${START_AT}"
+  HTML_URL="file://${VIEWER_HTML}?anim=${ANIMATION}&path=file://${ANIM_DIR}&screensaver=1&startAt=${START_AT}"
 else
-  HTML_URL="file://${ANIM_DIR}?screensaver=1&delayedStart=1"
+  HTML_URL="file://${VIEWER_HTML}?anim=${ANIMATION}&path=file://${ANIM_DIR}&screensaver=1&delayedStart=1"
 fi
 
 # Read per-animation params from screensaver-config.json.
@@ -92,6 +94,7 @@ chromium \
   --disable-sync \
   --disable-translate \
   --disable-dev-shm-usage \
+  --allow-file-access-from-files \
   --background-color=000000 \
   "$HTML_URL" 2>>"$CHROMIUM_ERROR_LOG"
 
