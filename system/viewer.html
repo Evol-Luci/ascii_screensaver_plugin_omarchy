@@ -107,6 +107,63 @@
             lastX = e.clientX; lastY = e.clientY;
             if (++moveCount > 10) dismiss();
         });
+
+        async function loadMetadata() {
+            if (!animId) return;
+            try {
+                // Determine if bundled or user animation
+                const isUserAnim = animPath.includes('.config/omarchy/ascii-screensaver');
+                let metadata = { title: animId, hint: '', author: '' };
+
+                if (isUserAnim) {
+                    const manifestPath = animPath.substring(0, animPath.lastIndexOf('/')) + '/manifest.json';
+                    const res = await fetch(manifestPath);
+                    if (res.ok) {
+                        const manifest = await res.json();
+                        metadata.title = manifest.name || animId;
+                        metadata.hint = manifest.description || '';
+                        metadata.author = manifest.author || '';
+                    }
+                } else {
+                    // Fetch bundled schema
+                    // Since viewer is in system/, params.schema.json is at ../params.schema.json
+                    const schemaRes = await fetch('../params.schema.json');
+                    if (schemaRes.ok) {
+                        const schema = await schemaRes.json();
+                        if (schema[animId]) {
+                            metadata.title = schema[animId].title || animId;
+                            metadata.hint = schema[animId].hint || '';
+                            metadata.author = 'Evol Digital Productions'; // Bundled default
+                        }
+                    }
+                }
+                
+                showCredits(metadata);
+            } catch (err) {
+                console.error("Failed to load metadata", err);
+            }
+        }
+
+        function showCredits(meta) {
+            const credits = document.createElement('div');
+            credits.className = 'credits-popup';
+            
+            let html = `<h2>${meta.title}</h2>`;
+            if (meta.hint) {
+                html += `<p class="credits-label">Animation</p><p>${meta.hint}</p>`;
+            }
+            if (meta.author) {
+                html += `<hr><p class="credits-label">Credits</p><p>${meta.author}</p>`;
+            }
+            credits.innerHTML = html;
+            
+            document.body.appendChild(credits);
+            setTimeout(() => credits.classList.add('visible'), 500);
+            setTimeout(() => credits.classList.remove('visible'), 30500);
+            setTimeout(() => credits.remove(), 32500);
+        }
+
+        loadMetadata();
     </script>
 </body>
 </html>
