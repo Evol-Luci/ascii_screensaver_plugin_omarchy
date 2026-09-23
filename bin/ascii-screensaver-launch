@@ -153,9 +153,17 @@ wait_for_screensaver_window() {
 
 start_at=$(( $(date +%s%3N) + 12000 ))
 
-for m in $(hyprctl monitors -j | jq -r '.[] | .name'); do
+# Launch all monitors in parallel first, then wait for all windows to appear.
+# This avoids the sequential bottleneck where each monitor waited for the
+# previous chromium to start (~1-2s each). Now all start simultaneously.
+mapfile -t monitors < <(hyprctl monitors -j | jq -r '.[] | .name')
+for m in "${monitors[@]}"; do
   hypr_focus_monitor "$m"
   hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" EXTRA_PARAMS="$EXTRA_PARAMS" bash "$CMD"
+done
+
+# Wait for all screensaver windows to appear
+for m in "${monitors[@]}"; do
   wait_for_screensaver_window
 done
 
