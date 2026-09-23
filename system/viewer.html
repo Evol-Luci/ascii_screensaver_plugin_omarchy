@@ -119,12 +119,30 @@
 
                 if (isUserAnim) {
                     const manifestPath = animPath.substring(0, animPath.lastIndexOf('/')) + '/manifest.json';
-                    const res = await fetch(manifestPath);
-                    if (res.ok) {
-                        const manifest = await res.json();
-                        metadata.title = manifest.name || animId;
-                        metadata.hint = manifest.description || '';
-                        metadata.author = manifest.author || '';
+                    console.log('[viewer] Fetching manifest from:', manifestPath);
+                    try {
+                        const res = await fetch(manifestPath);
+                        console.log('[viewer] Fetch response:', res.status, res.statusText, res.ok);
+                        if (res.ok) {
+                            const manifest = await res.json();
+                            metadata.title = manifest.name || animId;
+                            metadata.hint = manifest.description || '';
+                            metadata.author = manifest.author || '';
+                        } else {
+                            console.error('[viewer] Failed to fetch manifest:', res.status, res.statusText);
+                            metadata.hint = '(manifest fetch failed: ' + res.status + ')';
+                        }
+                    } catch (e) {
+                        console.error('[viewer] Network error fetching manifest:', e);
+                        metadata.hint = '(manifest fetch error)';
+                    }
+                    // Fallback: if fetch failed, try to extract params from URL
+                    if (!metadata.hint || metadata.hint.startsWith('(')) {
+                        const params = new URLSearchParams(animPath.split('?')[1] || '');
+                        const desc = params.get('description') || '';
+                        const author = params.get('author') || '';
+                        if (desc) metadata.hint = desc;
+                        if (author) metadata.author = author;
                     }
                 } else {
                     // Fetch bundled schema
