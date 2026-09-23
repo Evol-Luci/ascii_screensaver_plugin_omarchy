@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Screensaver Viewer</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #000;
@@ -12,6 +11,7 @@
             width: 100vw;
             height: 100vh;
             cursor: none;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
         }
         #anim-frame {
             position: absolute;
@@ -87,13 +87,12 @@
         });
         document.getElementById('anim-frame').src = frameUrl.toString();
 
-        // Dismiss Logic
+        // Dismiss Logic - window.close() works in --app mode
         let armed = false;
         setTimeout(() => { armed = true; }, 1500);
         const dismiss = () => {
             if (!armed) return;
-            try { window.close(); } catch(e) {}
-            document.body.innerHTML = '';
+            window.close();
         };
 
         const shield = document.getElementById('dismiss-shield');
@@ -112,7 +111,10 @@
             if (!animId) return;
             try {
                 // Determine if bundled or user animation
-                const isUserAnim = animPath.includes('.config/omarchy/ascii-screensaver');
+                // User: .../.config/omarchy/ascii-screensaver/animations/...
+                // Bundled: .../.config/omarchy/plugins/.../animations/...
+                const isUserAnim = animPath.includes('.config/omarchy/ascii-screensaver/animations/') &&
+                                   !animPath.includes('.config/omarchy/plugins/');
                 let metadata = { title: animId, hint: '', author: '' };
 
                 if (isUserAnim) {
