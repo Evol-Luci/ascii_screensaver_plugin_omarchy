@@ -15,6 +15,9 @@
 # Chromium is launched with --class=org.omarchy.screensaver so Omarchy's
 # idle service (omarchy.idle, cloned by this plugin's Service.qml) can
 # track the window via Hyprland's openwindow/closewindow events.
+#
+# Uses --app=URL (app mode) instead of --kiosk so window.close() works for
+# dismiss logic in viewer.html.
 
 PLUGIN_ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 ANIMATION="${ANIMATION:-terrarium}"
@@ -36,11 +39,13 @@ if [[ ! -f "$ANIM_DIR" ]]; then
   exit 1
 fi
 
-# Build base URL
+# Build base URL pointing to viewer wrapper
+VIEWER_HTML="${PLUGIN_ROOT}/system/viewer.html"
+
 if [[ -n "${START_AT:-}" ]]; then
-  HTML_URL="file://${ANIM_DIR}?screensaver=1&startAt=${START_AT}"
+  HTML_URL="file://${VIEWER_HTML}?anim=${ANIMATION}&path=file://${ANIM_DIR}&screensaver=1&startAt=${START_AT}"
 else
-  HTML_URL="file://${ANIM_DIR}?screensaver=1&delayedStart=1"
+  HTML_URL="file://${VIEWER_HTML}?anim=${ANIMATION}&path=file://${ANIM_DIR}&screensaver=1&delayedStart=1"
 fi
 
 # Read per-animation params from screensaver-config.json.
@@ -53,15 +58,17 @@ else
   SCREENSAVER_CONFIG="${PLUGIN_ROOT}/screensaver-config.json"
 fi
 if [[ -z "${ANIM_PARAMS:-}" ]] && [[ -f "$SCREENSAVER_CONFIG" ]] && command -v jq &>/dev/null; then
+  # URL-encode param values to handle special chars (&, =, spaces, etc.)
   ANIM_PARAMS=$(jq -r --arg name "$ANIMATION" '
     (.animations[] | select(.name == $name) | .params // {})
     | to_entries
-    | map("\(.key)=\(.value)")
+    | map("\(.key)=\(.value | @uri)")
     | join("&")
   ' "$SCREENSAVER_CONFIG" 2>/dev/null)
 fi
 
 [[ -n "${ANIM_PARAMS:-}" ]] && HTML_URL="${HTML_URL}&${ANIM_PARAMS}"
+[[ -n "${EXTRA_PARAMS:-}" ]] && HTML_URL="${HTML_URL}&${EXTRA_PARAMS}"
 
 exit_screensaver() {
   hyprctl eval 'hl.config({ cursor = { invisible = false } })' &>/dev/null \
@@ -80,11 +87,14 @@ mkdir -p "$RUN_DIR"
 CHROMIUM_USER_DATA_DIR="$(mktemp -d "${RUN_DIR}/${ANIMATION}-XXXXXXXX")"
 CHROMIUM_ERROR_LOG="${RUN_DIR}/chromium-errors.log"
 
+# Use --app=URL (app mode) so window.close() works for dismiss logic.
+# --start-fullscreen makes the app window open fullscreen (required for screensaver).
 chromium \
   --class="$SCREENSAVER_CLASS" \
   --user-data-dir="$CHROMIUM_USER_DATA_DIR" \
   --ozone-platform=wayland \
-  --kiosk \
+  --app="$HTML_URL" \
+  --start-fullscreen \
   --no-first-run \
   --no-default-browser-check \
   --disable-extensions \
@@ -92,8 +102,9 @@ chromium \
   --disable-sync \
   --disable-translate \
   --disable-dev-shm-usage \
+  --allow-file-access-from-files \
   --background-color=000000 \
-  "$HTML_URL" 2>>"$CHROMIUM_ERROR_LOG"
+  2>>"$CHROMIUM_ERROR_LOG"
 
 rm -rf "$CHROMIUM_USER_DATA_DIR" 2>/dev/null
 exit_screensaver

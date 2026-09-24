@@ -18,11 +18,14 @@
 
 set -uo pipefail
 
-# Exit early if screensaver is already running
-pgrep -f "animations/.*/index.html" > /dev/null 2>&1 && exit 0
-pgrep -x "ascii-screensaver-cmd" > /dev/null 2>&1 && exit 0
+FORCE="${1:-}"
+# Exit early if screensaver is already running (unless forced)
+if [[ "$FORCE" != "force" ]]; then
+  pgrep -f "animations/.*/index.html" > /dev/null 2>&1 && exit 0
+  pgrep -x "ascii-screensaver-cmd" > /dev/null 2>&1 && exit 0
+fi
 
-if [[ -f ~/.local/state/omarchy/toggles/screensaver-off ]] && [[ ${1:-} != "force" ]]; then
+if [[ -f ~/.local/state/omarchy/toggles/screensaver-off ]] && [[ "$FORCE" != "force" ]]; then
   exit 1
 fi
 
@@ -48,7 +51,7 @@ elif [[ ! -f "$CONFIG_FILE" ]] || ! command -v jq &>/dev/null; then
   ANIMATION="terrarium"
 else
   ENABLED=$(jq -r '.enabled // true' "$CONFIG_FILE")
-  if [[ "$ENABLED" == "false" && ${1:-} != "force" ]]; then
+  if [[ "$ENABLED" == "false" && "$FORCE" != "force" ]]; then
     exit 0
   fi
 
@@ -96,6 +99,16 @@ walker -q 2>/dev/null
 CMD="${PLUGIN_ROOT}/bin/ascii-screensaver-cmd"
 SCREENSAVER_CLASS="org.omarchy.screensaver"
 
+# For user animations, extract description/author from manifest.json to pass as URL params
+# (fallback in case viewer.html's fetch to manifest.json is blocked by CORS)
+EXTRA_PARAMS=""
+if [[ -f "${USER_ANIMATIONS_DIR}/${ANIMATION}/manifest.json" ]] && command -v jq &>/dev/null; then
+  DESC=$(jq -r '.description // ""' "${USER_ANIMATIONS_DIR}/${ANIMATION}/manifest.json" 2>/dev/null)
+  AUTHOR=$(jq -r '.author // ""' "${USER_ANIMATIONS_DIR}/${ANIMATION}/manifest.json" 2>/dev/null)
+  if [[ -n "$DESC" ]]; then EXTRA_PARAMS="description=$(printf '%s' "$DESC" | jq -sRr @uri)&"; fi
+  if [[ -n "$AUTHOR" ]]; then EXTRA_PARAMS="${EXTRA_PARAMS}author=$(printf '%s' "$AUTHOR" | jq -sRr @uri)&"; fi
+fi
+
 hypr_focus_monitor() {
   hyprctl dispatch "hl.dsp.focus({ monitor = \"$1\" })" >/dev/null 2>&1 \
     || hyprctl dispatch focusmonitor "$1" >/dev/null
@@ -134,16 +147,29 @@ exec {events}< <(socat -U - "UNIX-CONNECT:$SOCKET")
 wait_for_screensaver_window() {
   local line deadline=$((SECONDS + 5))
   while ((SECONDS < deadline)) && IFS= read -r -t $((deadline - SECONDS)) -u "$events" line; do
-    [[ $line == openwindow\>\>*,"$SCREENSAVER_CLASS",* ]] && return 0
+    if [[ $line == openwindow\>\>*,"$SCREENSAVER_CLASS",* ]] || [[ $line == openwindow\>\>*ascii-screensaver_system_viewer* ]]; then
+      return 0
+    fi
   done
 }
 
 start_at=$(( $(date +%s%3N) + 12000 ))
 
-for m in $(hyprctl monitors -j | jq -r '.[] | .name'); do
-  hypr_focus_monitor "$m"
-  hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" bash "$CMD"
+# We must launch sequentially and wait for each window to map before shifting focus
+# to the next monitor. Chromium (Wayland native) uses a multiprocess architecture 
+# that causes Hyprland to lose track of the PID, meaning [monitor $m] exec rules 
+# are silently ignored.
+if [[ "$FORCE" == "force" ]]; then
+  # For panel previews, only launch on the active monitor
+  hypr_focus_monitor "$focused"
+  hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" EXTRA_PARAMS="$EXTRA_PARAMS" bash "$CMD"
   wait_for_screensaver_window
-done
+else
+  for m in $(hyprctl monitors -j | jq -r '.[] | .name'); do
+    hypr_focus_monitor "$m"
+    hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" EXTRA_PARAMS="$EXTRA_PARAMS" bash "$CMD"
+    wait_for_screensaver_window
+  done
+fi
 
 hypr_focus_monitor "$focused"

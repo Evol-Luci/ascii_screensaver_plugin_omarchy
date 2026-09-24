@@ -172,7 +172,10 @@ Item {
     var name = String(event && event.name ? event.name : "")
     if (name === "openwindow") {
       var open = eventParts(event, 4)
-      if (String(open[2] || "") === root.screensaverClass) root.handleScreensaverWindowOpened(open[0])
+      var cls = String(open[2] || "")
+      if (cls === root.screensaverClass || cls.indexOf("ascii-screensaver_system_viewer") !== -1) {
+        root.handleScreensaverWindowOpened(open[0])
+      }
     } else if (name === "closewindow") {
       var close = eventParts(event, 1)
       var address = String(close[0] || "")
@@ -375,9 +378,17 @@ Item {
     onLoadFailed: function(error) { root.ourConfig = ({}) }
   }
 
+  Process {
+    id: ensureUserConfigDir
+    running: false
+  }
+
   Component.onCompleted: {
     logEvent("service-ready")
     refreshStayAwakeState()
+    var userConfigDir = ConfigPaths.userConfigPath().replace(/\/[^/]+$/, "")
+    ensureUserConfigDir.command = ["mkdir", "-p", userConfigDir]
+    ensureUserConfigDir.running = true
   }
 
   IpcHandler {
