@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Commons
 import qs.Ui
+import Quickshell.Io
 import "ParamMeta.js" as ParamMeta
 
 // Everything about one animation: whether it plays, how often it is
@@ -47,18 +48,70 @@ ColumnLayout {
     wrapMode: Text.WordWrap
   }
 
+  Process {
+    id: previewStateWriter
+    running: false
+  }
+
+  Process {
+    id: previewProcess
+    running: false
+    command: [
+        "env",
+        "PREVIEW=1",
+        "ANIMATION=" + root.animationName,
+        "bash", String(Qt.resolvedUrl(".")).replace(/^file:\/\//, "").replace(/\/$/, "") + "/bin/ascii-screensaver-cmd"
+    ]
+  }
+
+  Component.onDestruction: {
+    if (previewProcess.running) {
+        previewProcess.running = false;
+        var cleanup = Qt.createQmlObject('import Quickshell.Io; Process { running: true; command: ["pkill", "-f", "ascii-screensaver-preview"] }', root);
+    }
+  }
+
+  onVisibleChanged: {
+    if (!visible && previewProcess.running) {
+        previewProcess.running = false;
+    }
+  }
+
+  function updatePreviewState() {
+      if (!previewProcess.running) return;
+      
+      var state = {};
+      for (var i = 0; i < root.paramNames.length; i++) {
+          var key = root.paramNames[i];
+          state[key] = root.entry && root.entry.params && root.entry.params[key] !== undefined 
+              ? root.entry.params[key] 
+              : (root.animationSchema.params[key] ? root.animationSchema.params[key].defaultValue : undefined);
+      }
+      
+      var jsonStr = JSON.stringify(state);
+      previewStateWriter.command = ["bash", "-c", "echo '" + jsonStr + "' > /tmp/ascii-screensaver-preview.json"];
+      previewStateWriter.running = true;
+  }
+
   RowLayout {
     Layout.fillWidth: true
     spacing: Style.spacing.lg
 
     Button {
-      text: "Preview this animation"
-      onClicked: root.previewRequested()
+      text: previewProcess.running ? "Stop Live Preview" : "Start Live Preview"
+      onClicked: {
+          if (previewProcess.running) {
+              previewProcess.running = false;
+          } else {
+              root.updatePreviewState();
+              previewProcess.running = true;
+          }
+      }
     }
 
     Text {
       Layout.fillWidth: true
-      text: "Plays full screen with the settings below, even while it is switched off."
+      text: "Opens a floating window that hot-reloads instantly as you change settings below."
       color: Color.muted
       font.family: Style.font.family
       font.pixelSize: Style.font.caption
@@ -142,7 +195,7 @@ ColumnLayout {
       paramName: modelData
       spec: root.animationSchema.params[modelData]
       currentValue: root.entry && root.entry.params ? root.entry.params[modelData] : undefined
-      onEdited: function (value) { root.paramEdited(modelData, value) }
+      onEdited: function (value) { root.paramEdited(modelData, value); root.updatePreviewState(); }
     }
   }
 
