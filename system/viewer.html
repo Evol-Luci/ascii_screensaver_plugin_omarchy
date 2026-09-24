@@ -110,52 +110,46 @@
         async function loadMetadata() {
             if (!animId) return;
             try {
-                // Determine if bundled or user animation
-                // User: .../.config/omarchy/ascii-screensaver/animations/...
-                // Bundled: .../.config/omarchy/plugins/.../animations/...
-                const isUserAnim = animPath.includes('.config/omarchy/ascii-screensaver/animations/') &&
-                                   !animPath.includes('.config/omarchy/plugins/');
                 let metadata = { title: animId, hint: '', author: '' };
 
-                if (isUserAnim) {
-                    const manifestPath = animPath.substring(0, animPath.lastIndexOf('/')) + '/manifest.json';
-                    console.log('[viewer] Fetching manifest from:', manifestPath);
+                // 1. Try fetching manifest.json from the animation's directory
+                const manifestPath = animPath.substring(0, animPath.lastIndexOf('/')) + '/manifest.json';
+                try {
+                    const res = await fetch(manifestPath);
+                    if (res.ok) {
+                        const manifest = await res.json();
+                        metadata.title = manifest.name || animId;
+                        metadata.hint = manifest.description || '';
+                        metadata.author = manifest.author || '';
+                    }
+                } catch (e) {
+                    console.error('[viewer] Network error fetching manifest:', e);
+                }
+
+                // 2. Fallback: try bundled params.schema.json
+                if (!metadata.hint) {
                     try {
-                        const res = await fetch(manifestPath);
-                        console.log('[viewer] Fetch response:', res.status, res.statusText, res.ok);
-                        if (res.ok) {
-                            const manifest = await res.json();
-                            metadata.title = manifest.name || animId;
-                            metadata.hint = manifest.description || '';
-                            metadata.author = manifest.author || '';
-                        } else {
-                            console.error('[viewer] Failed to fetch manifest:', res.status, res.statusText);
-                            metadata.hint = '(manifest fetch failed: ' + res.status + ')';
+                        const schemaRes = await fetch('../params.schema.json');
+                        if (schemaRes.ok) {
+                            const schema = await schemaRes.json();
+                            if (schema[animId]) {
+                                metadata.title = schema[animId].title || metadata.title;
+                                metadata.hint = schema[animId].hint || '';
+                                if (!metadata.author) metadata.author = 'Evol Digital Productions'; // Bundled default
+                            }
                         }
                     } catch (e) {
-                        console.error('[viewer] Network error fetching manifest:', e);
-                        metadata.hint = '(manifest fetch error)';
+                        console.error('[viewer] Network error fetching schema:', e);
                     }
-                    // Fallback: if fetch failed, try to extract params from URL
-                    if (!metadata.hint || metadata.hint.startsWith('(')) {
-                        const params = new URLSearchParams(animPath.split('?')[1] || '');
-                        const desc = params.get('description') || '';
-                        const author = params.get('author') || '';
-                        if (desc) metadata.hint = desc;
-                        if (author) metadata.author = author;
-                    }
-                } else {
-                    // Fetch bundled schema
-                    // Since viewer is in system/, params.schema.json is at ../params.schema.json
-                    const schemaRes = await fetch('../params.schema.json');
-                    if (schemaRes.ok) {
-                        const schema = await schemaRes.json();
-                        if (schema[animId]) {
-                            metadata.title = schema[animId].title || animId;
-                            metadata.hint = schema[animId].hint || '';
-                            metadata.author = 'Evol Digital Productions'; // Bundled default
-                        }
-                    }
+                }
+
+                // 3. Fallback: use URL parameters passed by the launcher
+                if (!metadata.hint || metadata.hint.startsWith('(')) {
+                    // params is the outer URLSearchParams from window.location.search
+                    const desc = params.get('description') || '';
+                    const author = params.get('author') || '';
+                    if (desc) metadata.hint = desc;
+                    if (author) metadata.author = author;
                 }
                 
                 showCredits(metadata);
@@ -169,18 +163,18 @@
             credits.className = 'credits-popup';
             
             let html = `<h2>${meta.title}</h2>`;
-            if (meta.hint) {
+            if (meta.hint && meta.hint.trim()) {
                 html += `<p class="credits-label">Animation</p><p>${meta.hint}</p>`;
             }
-            if (meta.author) {
+            if (meta.author && meta.author.trim()) {
                 html += `<hr><p class="credits-label">Credits</p><p>${meta.author}</p>`;
             }
             credits.innerHTML = html;
             
             document.body.appendChild(credits);
-            setTimeout(() => credits.classList.add('visible'), 500);
-            setTimeout(() => credits.classList.remove('visible'), 30500);
-            setTimeout(() => credits.remove(), 32500);
+            setTimeout(() => credits.classList.add('visible'), 100);
+            setTimeout(() => credits.classList.remove('visible'), 4500);
+            setTimeout(() => credits.remove(), 6500);
         }
 
         loadMetadata();
