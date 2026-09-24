@@ -77,6 +77,31 @@
         const params = new URLSearchParams(window.location.search);
         const animPath = params.get('path');
         const animId = params.get('anim');
+
+        const isPreviewMode = params.get('preview_mode') === '1';
+        let currentPreviewParams = "";
+
+        if (isPreviewMode) {
+            setInterval(async () => {
+                try {
+                    const res = await fetch('file:///tmp/ascii-screensaver-preview.json', { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const newParams = new URLSearchParams(data).toString();
+                        if (newParams !== currentPreviewParams) {
+                            currentPreviewParams = newParams;
+                            // Hot reload the iframe src
+                            const iframe = document.getElementById('anim-frame');
+                            if (iframe) {
+                                iframe.src = `${animPath}?${newParams}`;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Silently ignore fetch errors
+                }
+            }, 300);
+        }
         
         // Pass original params down to iframe
         const frameUrl = new URL(animPath);
