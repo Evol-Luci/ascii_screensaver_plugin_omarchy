@@ -147,24 +147,29 @@ exec {events}< <(socat -U - "UNIX-CONNECT:$SOCKET")
 wait_for_screensaver_window() {
   local line deadline=$((SECONDS + 5))
   while ((SECONDS < deadline)) && IFS= read -r -t $((deadline - SECONDS)) -u "$events" line; do
-    [[ $line == openwindow\>\>*,"$SCREENSAVER_CLASS",* ]] && return 0
+    if [[ $line == openwindow\>\>*,"$SCREENSAVER_CLASS",* ]] || [[ $line == openwindow\>\>*ascii-screensaver_system_viewer* ]]; then
+      return 0
+    fi
   done
 }
 
 start_at=$(( $(date +%s%3N) + 12000 ))
 
-# Launch all monitors in parallel first, then wait for all windows to appear.
-# This avoids the sequential bottleneck where each monitor waited for the
-# previous chromium to start (~1-2s each). Now all start simultaneously.
-mapfile -t monitors < <(hyprctl monitors -j | jq -r '.[] | .name')
-for m in "${monitors[@]}"; do
-  hypr_focus_monitor "$m"
+# We must launch sequentially and wait for each window to map before shifting focus
+# to the next monitor. Chromium (Wayland native) uses a multiprocess architecture 
+# that causes Hyprland to lose track of the PID, meaning [monitor $m] exec rules 
+# are silently ignored.
+if [[ "$FORCE" == "force" ]]; then
+  # For panel previews, only launch on the active monitor
+  hypr_focus_monitor "$focused"
   hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" EXTRA_PARAMS="$EXTRA_PARAMS" bash "$CMD"
-done
-
-# Wait for all screensaver windows to appear
-for m in "${monitors[@]}"; do
   wait_for_screensaver_window
-done
+else
+  for m in $(hyprctl monitors -j | jq -r '.[] | .name'); do
+    hypr_focus_monitor "$m"
+    hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" EXTRA_PARAMS="$EXTRA_PARAMS" bash "$CMD"
+    wait_for_screensaver_window
+  done
+fi
 
 hypr_focus_monitor "$focused"
