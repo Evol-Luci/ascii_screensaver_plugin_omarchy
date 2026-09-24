@@ -82,6 +82,7 @@
         let currentPreviewParams = "";
 
         if (isPreviewMode) {
+    document.title = 'Screensaver Preview';
             setInterval(async () => {
                 try {
                     const res = await fetch('file:///tmp/ascii-screensaver-preview.json', { cache: 'no-store' });
@@ -112,10 +113,11 @@
         });
         document.getElementById('anim-frame').src = frameUrl.toString();
 
-        // Dismiss Logic - window.close() works in --app mode
+                // Dismiss Logic - window.close() works in --app mode
         let armed = false;
         setTimeout(() => { armed = true; }, 1500);
         const dismiss = () => {
+            if (isPreviewMode) return; // DO NOT DISMISS IN PREVIEW MODE
             if (!armed) return;
             window.close();
         };
