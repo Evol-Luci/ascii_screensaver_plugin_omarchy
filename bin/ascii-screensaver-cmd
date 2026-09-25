@@ -83,8 +83,10 @@ exit_screensaver() {
 
 trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
 
-hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null \
-  || hyprctl keyword cursor:invisible true &>/dev/null
+if [[ "${PREVIEW:-}" != "1" ]]; then
+  hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null \
+    || hyprctl keyword cursor:invisible true &>/dev/null
+fi
 
 RUN_DIR="${XDG_RUNTIME_DIR}/ascii-screensaver"
 mkdir -p "$RUN_DIR"
@@ -99,10 +101,10 @@ if [[ "${PREVIEW:-}" == "1" ]]; then
   (
     for i in {1..30}; do
       if hyprctl clients -j | grep -q '"title": "Screensaver Preview"'; then
-        hyprctl dispatch setfloating "title:^Screensaver Preview$"
-        hyprctl dispatch pin "title:^Screensaver Preview$"
-        hyprctl dispatch centerwindow "title:^Screensaver Preview$"
-        hyprctl dispatch resizewindowpixel "exact 600 450,title:^Screensaver Preview$"
+        hyprctl eval 'hl.dispatch(hl.dsp.window.float("title:Screensaver Preview"))' &>/dev/null
+        hyprctl eval 'hl.dispatch(hl.dsp.window.pin("title:Screensaver Preview"))' &>/dev/null
+        hyprctl eval 'hl.dispatch(hl.dsp.window.resize({ x=600, y=450, window="title:Screensaver Preview" }))' &>/dev/null
+        hyprctl eval 'hl.dispatch(hl.dsp.window.center("title:Screensaver Preview"))' &>/dev/null
         break
       fi
       sleep 0.1
