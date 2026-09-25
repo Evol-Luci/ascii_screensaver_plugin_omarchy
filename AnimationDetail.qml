@@ -89,7 +89,7 @@ ColumnLayout {
       }
       
       var jsonStr = JSON.stringify(state);
-      previewStateWriter.command = ["bash", "-c", "echo '" + jsonStr + "' > /tmp/ascii-screensaver-preview.json"];
+      previewStateWriter.command = ["bash", "-c", "echo 'window.__previewUpdate(" + jsonStr + ");' > /tmp/ascii-screensaver-preview.js"];
       previewStateWriter.running = true;
   }
 
