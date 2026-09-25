@@ -97,7 +97,7 @@ CHROMIUM_ERROR_LOG="${RUN_DIR}/chromium-errors.log"
 # --start-fullscreen makes the app window open fullscreen (required for screensaver).
 if [[ "${PREVIEW:-}" == "1" ]]; then
   SCREENSAVER_CLASS="ascii-screensaver-preview"
-  CHROMIUM_FLAGS="--window-size=600,450 --disable-web-security"
+  CHROMIUM_FLAGS="--window-size=600,450 --disable-web-security --test-type"
   (
     for i in {1..30}; do
       if hyprctl clients -j | grep -q '"title": "Screensaver Preview"'; then
