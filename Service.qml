@@ -37,16 +37,43 @@ Item {
   // Browsers ask to stay awake during video over D-Bus
   // (org.freedesktop.ScreenSaver), which hypridle used to answer and nothing
   // in the Omarchy shell does — IdleMonitor's respectInhibitors only covers
-  // the Wayland idle-inhibit protocol. So watch MPRIS instead: while any
-  // player (YouTube in a browser, mpv, Spotify, VLC…) reports Playing, the
-  // idle countdown is held off, and it starts fresh once playback stops.
-  readonly property bool stayAwakeForMedia: ourConfig.stayAwakeForMedia !== false
-  readonly property bool mediaPlaying: {
+  // the Wayland idle-inhibit protocol. So watch MPRIS instead: while a player
+  // reports Playing, the idle countdown is held off, and it starts fresh once
+  // playback stops. By default only video holds it off — music playing in the
+  // background is a fine time for the screensaver.
+  //   mediaStayAwake: "video" (default) | "all" | "off"
+  readonly property string mediaStayAwake: ["video", "all", "off"].indexOf(ourConfig.mediaStayAwake) >= 0
+    ? ourConfig.mediaStayAwake : "video"
+  readonly property bool mediaPlaying: playingPlayers().length > 0
+  readonly property bool videoPlaying: playingPlayers().some(p => root.isVideoPlayer(p))
+  readonly property bool mediaInhibit: mediaStayAwake === "all" ? mediaPlaying
+    : mediaStayAwake === "video" ? videoPlaying : false
+
+  function playingPlayers() {
+    const out = []
     const players = Mpris.players.values
-    for (let i = 0; i < players.length; i++) if (players[i].isPlaying) return true
-    return false
+    for (let i = 0; i < players.length; i++) if (players[i].isPlaying) out.push(players[i])
+    return out
   }
-  readonly property bool mediaInhibit: stayAwakeForMedia && mediaPlaying
+
+  // MPRIS has no "this is video" flag, so classify by player and metadata:
+  // dedicated music players are music; video players are video unless the
+  // file is audio; browsers are video unless the page reports an album
+  // (YouTube Music, Spotify/SoundCloud/Bandcamp web set one; YouTube videos
+  // leave it empty). Anything unrecognised counts as video — the safe side.
+  readonly property var musicApps: ["spotify", "rhythmbox", "lollypop", "amberol", "strawberry", "elisa", "clementine",
+    "audacious", "deadbeef", "quodlibet", "quod libet", "cmus", "mpd", "ncspot", "spotify-player", "tauon", "cantata",
+    "g4music", "gapless", "euphonica", "tidal", "cider", "youtube music", "plexamp", "feishin", "sonixd", "supersonic"]
+  function isVideoPlayer(p) {
+    const id = String(p.identity || "").toLowerCase() + " " + String(p.desktopEntry || "").toLowerCase() + " " + String(p.dbusName || "").toLowerCase()
+    for (let i = 0; i < root.musicApps.length; i++) if (id.indexOf(root.musicApps[i]) >= 0) return false
+    const url = String((p.metadata && p.metadata["xesam:url"]) || "").toLowerCase()
+    if (/\.(mp3|flac|ogg|oga|opus|m4a|aac|wav|wma|alac|ape)(\?|$)/.test(url)) return false
+    if (/music\.youtube\.com|open\.spotify\.com|soundcloud\.com|bandcamp\.com/.test(url)) return false
+    const browser = /chrom|firefox|brave|vivaldi|edge|opera|zen|librewolf|floorp|epiphany/.test(id)
+    if (browser && String(p.trackAlbum || "").trim() !== "") return false
+    return true
+  }
   readonly property string screensaverClass: "org.omarchy.screensaver"
   readonly property string pluginDir: String(Qt.resolvedUrl(".")).replace(/^file:\/\//, "").replace(/\/$/, "")
   // Chromium on Wayland ignores --class and derives the window's app_id from
@@ -229,7 +256,9 @@ Item {
     return JSON.stringify({
       enabled: root.idleEnabled,
       stayAwake: root.stayAwake,
+      mediaStayAwake: root.mediaStayAwake,
       mediaPlaying: root.mediaPlaying,
+      videoPlaying: root.videoPlaying,
       mediaInhibit: root.mediaInhibit,
       stayAwakeStateLoaded: root.stayAwakeStateLoaded,
       stayAwakeStatePath: root.stayAwakeStatePath,
