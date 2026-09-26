@@ -141,10 +141,17 @@ var OVERRIDES = {
     speed: "How fast the view zooms into the fractal."
   },
   terrarium: {
-    cycleTime: "Seconds for one full day-night cycle."
+    cycleTime: "Minutes for one full day-night cycle. 0 holds a fixed time of day."
   },
   aquarium: {
-    cycleTime: "Seconds for one full day-night cycle."
+    cycleTime: "Minutes for one full day-night cycle. 0 holds a fixed time of day."
+  },
+  boids: {
+    cycleTime: "Minutes for one full day, dusk murmuration included. 0 holds a fixed late afternoon.",
+    palette: "Season: summer meadow, falling autumn leaves, winter snow, or monochrome.",
+    flockSize: "Number of resident starlings. More arrive to join the roost at dusk.",
+    predator: "A falcon that circles and stoops on the flock.",
+    predatorSpeed: "How fast the falcon dives."
   },
   pendulum_wave: {
     cycleTime: "Seconds before the pendulums realign into their starting row."
