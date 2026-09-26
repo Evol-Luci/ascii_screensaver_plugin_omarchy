@@ -302,9 +302,32 @@ otherwise the self-triggered rescan can find the not-yet-deleted directory
 and silently re-add the very thing you're removing.
 
 ## Anatomy of a marketplace animation
-When creating or validating animations for the marketplace, two easily missed requirements exist:
-1. **Valid Preview Images**: The `preview.gif` (or `.png`/`.jpg`) referenced in `manifest.json` MUST be a structurally valid binary image. Using a text file with dummy data (e.g., `echo "GIF89a" > preview.gif`) will silently break the Omarchy QML renderer and stop the marketplace UI from displaying properly.
-2. **Screensaver Dismiss Logic**: You do **NOT** need to implement dismiss logic. The Omarchy screensaver plugin wraps all animations in a unified system viewer that captures mouse/keyboard activity and automatically tears down the process.
+
+The authoritative rules are the animations repo's `CONTRIBUTING.md` and
+`.github/scripts/validate_animation.py`; the lessons behind them:
+
+1. **Valid preview images.** The preview named in `manifest.json` must be a
+   real, animated (if `.gif`), non-blank image of at least 200x120. A text file
+   saved as `preview.gif` silently broke the Marketplace UI once.
+2. **The manifest must name the preview that's actually there.** When a new
+   `preview.gif` was added beside an old `preview.jpg`, the manifest still named
+   the JPG and the Marketplace kept showing it. The validator now rejects any
+   file in the folder except `index.html`, `manifest.json` and the named preview.
+3. **No dismiss or info-panel code.** The viewer provides both (see below);
+   the validator rejects `window.close()`, code building a `credits-popup`, and
+   reading the `screensaver` param.
+4. **Size the canvas in a `resize` handler.** The window can map at 0x0 before
+   it has its real size; an animation that measured once at load drew nothing
+   (dna, fireworks, galaxy and ocean all shipped that way). The validator
+   rejects reading `innerWidth`/`innerHeight` without handling `resize`.
+
+**Built-ins have no `manifest.json` in this repo — on purpose.** Their
+info-panel text comes from `params.schema.json`. `bin/ascii-screensaver-cmd`
+prefers a `manifest.json` next to `index.html` when one exists, so stray
+copied manifests (Gemini once dropped the animations repo's into every bundled
+folder, untracked) silently override the schema with stale descriptions. If
+the screensaver's info panel shows old text, look for untracked files in the
+*installed* checkout: `git -C ~/.config/omarchy/plugins/io.github.evol-luci.ascii-screensaver status --short`.
 
 ## The viewer, the live preview, and why Chromium's --class doesn't matter
 

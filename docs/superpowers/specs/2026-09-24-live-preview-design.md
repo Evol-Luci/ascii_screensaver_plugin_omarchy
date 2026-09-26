@@ -1,5 +1,7 @@
 # Live Preview Design Spec
 
+> **Status:** Superseded (2026-09-25). The shipped live preview is embedded in the settings panel rather than a pinned, centered window: LivePreview.qml keeps a borderless Chromium window over a slot on each animation page and follows the panel; it runs whenever an animation page is open (no toggle); state goes through a JSONP file in $XDG_RUNTIME_DIR written with FileView (no /tmp, no shell, no --disable-web-security); it opens system/preview.html so its window is never mistaken for a screensaver. See AGENTS.md.
+
 ## Overview
 This feature upgrades the Omarchy ascii-screensaver settings panel to support a dynamic, hot-reloading "Live Preview" of animations as their parameters are edited. Since the Quickshell QML runtime lacks an embedded web engine, the preview is achieved by spawning a specialized floating Chromium window that continuously polls a local state file for parameter updates.
 

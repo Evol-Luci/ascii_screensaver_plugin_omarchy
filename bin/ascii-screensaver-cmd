@@ -93,7 +93,7 @@ if command -v jq &>/dev/null; then
   if [[ -z "$META_PARAMS" && -f "${PLUGIN_ROOT}/params.schema.json" ]]; then
     META_PARAMS=$(jq -r --arg name "$ANIMATION" '
       .[$name] // empty
-      | [["meta_title", .title], ["meta_description", .hint], ["meta_author", "Evol Digital Productions"]]
+      | [["meta_title", .title], ["meta_description", .hint], ["meta_author", "Luci Evol - www.evoldigitalproductions.com"]]
       | map(select(.[1] | type == "string" and length > 0) | "\(.[0])=\(.[1] | @uri)")
       | join("&")
     ' "${PLUGIN_ROOT}/params.schema.json" 2>/dev/null)

@@ -24,7 +24,7 @@ and are removed as of this version. This project is now distributed as an
    block is inert either way, but worth cleaning up.)
 3. Install the plugin:
    ```bash
-   omarchy plugin add https://github.com/Evol-Luci/ascii-screensaver.git --enable
+   omarchy plugin add https://github.com/Evol-Luci/ascii_screensaver_plugin_omarchy.git --enable
    ```
 
 ## If you cloned the repo and ran `install.sh` manually
@@ -37,20 +37,21 @@ and are removed as of this version. This project is now distributed as an
 3. Remove any `hypridle.conf` listener you added by hand (see above).
 4. Install the plugin the same way:
    ```bash
-   omarchy plugin add https://github.com/Evol-Luci/ascii-screensaver.git --enable
+   omarchy plugin add https://github.com/Evol-Luci/ascii_screensaver_plugin_omarchy.git --enable
    ```
 
 ## What changes for you
 
-- The screensaver is now triggered by a cloned `omarchy.idle` service
-  instead of `hypridle` — timeouts are configured the same way, in
-  `~/.config/omarchy/shell.json`'s `idle.screensaver` / `idle.lock` keys.
-- Per-animation parameters still live at
-  `~/.config/ascii-screensaver/screensaver-config.json`, unchanged.
-- Configuration now happens through a native settings panel instead of
-  the old HTML UI, launched via:
+- The screensaver is triggered by the plugin's own idle service (a clone of
+  Omarchy's `omarchy.idle`) instead of `hypridle`.
+- **Timing** is set on the settings panel's **General** page ("Screensaver
+  after" / "Lock after"). Until you change them there, the plugin falls back to
+  `~/.config/omarchy/shell.json`'s `idle.screensaver` / `idle.lock` values.
+- Your settings still live at
+  `~/.config/ascii-screensaver/screensaver-config.json`; existing per-animation
+  parameters carry over.
+- Configuration happens in a native settings panel (with a live preview of
+  each animation) instead of the old HTML UI. Open it from the bar icon, or:
   ```bash
   omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'
   ```
-  See the README's "Configuring animations" section for adding this as
-  an Omarchy menu shortcut.
