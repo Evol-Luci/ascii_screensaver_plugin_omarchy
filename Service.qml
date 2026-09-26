@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Services.Mpris
 import Quickshell.Wayland
 import "IdleModel.js" as IdleModel
 import "ConfigPaths.js" as ConfigPaths
@@ -33,6 +34,19 @@ Item {
   readonly property int screensaverDelaySeconds: Math.max(0, screensaverTimeoutSeconds - firstIdleTimeoutSeconds)
   readonly property int lockDelaySeconds: Math.max(0, lockTimeoutSeconds - firstIdleTimeoutSeconds)
   readonly property bool idleEnabled: stayAwakeStateLoaded && !stayAwake
+  // Browsers ask to stay awake during video over D-Bus
+  // (org.freedesktop.ScreenSaver), which hypridle used to answer and nothing
+  // in the Omarchy shell does — IdleMonitor's respectInhibitors only covers
+  // the Wayland idle-inhibit protocol. So watch MPRIS instead: while any
+  // player (YouTube in a browser, mpv, Spotify, VLC…) reports Playing, the
+  // idle countdown is held off, and it starts fresh once playback stops.
+  readonly property bool stayAwakeForMedia: ourConfig.stayAwakeForMedia !== false
+  readonly property bool mediaPlaying: {
+    const players = Mpris.players.values
+    for (let i = 0; i < players.length; i++) if (players[i].isPlaying) return true
+    return false
+  }
+  readonly property bool mediaInhibit: stayAwakeForMedia && mediaPlaying
   readonly property string screensaverClass: "org.omarchy.screensaver"
   readonly property string pluginDir: String(Qt.resolvedUrl(".")).replace(/^file:\/\//, "").replace(/\/$/, "")
   // Chromium on Wayland ignores --class and derives the window's app_id from
@@ -215,6 +229,8 @@ Item {
     return JSON.stringify({
       enabled: root.idleEnabled,
       stayAwake: root.stayAwake,
+      mediaPlaying: root.mediaPlaying,
+      mediaInhibit: root.mediaInhibit,
       stayAwakeStateLoaded: root.stayAwakeStateLoaded,
       stayAwakeStatePath: root.stayAwakeStatePath,
       idle: idleMonitor.isIdle,
@@ -281,9 +297,18 @@ Item {
     return applyStayAwake(!value, true, "ipc")
   }
 
+  onMediaInhibitChanged: {
+    logEvent("media", root.mediaInhibit ? "playing: idle held off" : "stopped")
+    // Media started before the screensaver appeared (the only window in
+    // which it can matter): abandon this idle cycle.
+    if (root.mediaInhibit && root.idledThisCycle && !root.screensaverStartedThisCycle) cancelIdleCycle("media-playing")
+  }
+
   IdleMonitor {
     id: idleMonitor
-    enabled: root.idleEnabled
+    // Disabling resets the countdown, so idle time only counts from when
+    // playback stops.
+    enabled: root.idleEnabled && !root.mediaInhibit
     timeout: root.firstIdleTimeoutSeconds
     respectInhibitors: true
     onIsIdleChanged: root.handleIdleChanged()
