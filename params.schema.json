@@ -64,7 +64,7 @@
   },
   "moon": {
     "title": "Moon",
-    "hint": "Orbital ASCII scene with star count, floaters, glow, and palette.",
+    "hint": "Our heavenly moon: tonight's real phase and its place among the zodiac constellations, then its month unfolding \u2014 the terminator sweeping the maria and craters, earthshine on the dark limb, a slow libration \u2014 over a still lake that holds its reflection. Owls and geese cross the disc, meteors fall, and a caption names the phase with a thought for it.",
     "params": {
       "speed": {
         "type": "range",
@@ -108,6 +108,30 @@
         "step": 0.05,
         "value": 1,
         "integer": false
+      },
+      "cycleTime": {
+        "type": "range",
+        "min": 0,
+        "max": 60,
+        "step": 1,
+        "value": 12,
+        "integer": true
+      },
+      "constellations": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
+      },
+      "captions": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
       }
     }
   },
@@ -253,7 +277,7 @@
   },
   "aurora": {
     "title": "Aurora",
-    "hint": "Procedural aurora borealis ribbons with twinkling star field.",
+    "hint": "A northern night: curtains of aurora with running rays, green at their feet and crimson at their crowns, cycle from quiet arcs through a substorm \u2014 flaring, racing, a corona overhead \u2014 to slow pulsing, over snowy peaks and a frozen lake that mirrors them. A cabin glows and smokes; a lone watcher stands on the shore.",
     "params": {
       "speed": {
         "type": "range",
@@ -297,6 +321,14 @@
         "step": 10,
         "value": 150,
         "integer": true
+      },
+      "activity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
       }
     }
   },
@@ -352,7 +384,7 @@
   },
   "pipes": {
     "title": "Pipes",
-    "hint": "Growing pipe network using Unicode box-drawing characters.",
+    "hint": "Glossy 3D pipes grow through a lattice, turning at elbows and ball joints \u2014 shaded like real lit metal tubes, then rendered as ASCII by brightness \u2014 dissolving and rebuilding from a fresh angle each time.",
     "params": {
       "speed": {
         "type": "range",
@@ -460,7 +492,7 @@
   },
   "thunderstorm": {
     "title": "Thunderstorm",
-    "hint": "Dynamic rain, lightning bolts, and storm clouds in ASCII.",
+    "hint": "A storm with a life: it gathers, breaks, peaks and clears. Rain drives in gusts, branching bolts strike and crawl the cloud base, each flash silhouetting the land, the sky rumbles, and a rainbow follows. Each palette is its own place: plains with a farmhouse, a tropical coast, desert mesas, or arctic thundersnow.",
     "params": {
       "intensity": {
         "type": "range",
@@ -496,12 +528,20 @@
           "arctic",
           "mono"
         ]
+      },
+      "cycleTime": {
+        "type": "range",
+        "min": 0,
+        "max": 20,
+        "step": 0.5,
+        "value": 4,
+        "integer": false
       }
     }
   },
   "incense": {
     "title": "Incense",
-    "hint": "Smoke particle simulation rising from an incense stick with wind and turbulence controls.",
+    "hint": "An altar at night: incense burns in a bowl of sand between two candles, its smoke curling up before a seated figure and a lotus mandala that swells and settles with a slow breath. Sticks burn down and are relit, the singing bowl sounds in rings, a moonbeam slants through, and petals fall from the offering.",
     "params": {
       "speed": {
         "type": "range",
@@ -562,12 +602,36 @@
         "step": 0.05,
         "value": 0.8,
         "integer": false
+      },
+      "stickCount": {
+        "type": "range",
+        "min": 1,
+        "max": 3,
+        "step": 1,
+        "value": 3,
+        "integer": true
+      },
+      "glowIntensity": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
+      },
+      "breath": {
+        "type": "select",
+        "value": 1,
+        "options": [
+          0,
+          1
+        ]
       }
     }
   },
   "campfire": {
     "title": "Campfire",
-    "hint": "Layered noise-driven flame tongues with rising embers, a dark forest silhouette, and a drifting firefly.",
+    "hint": "A fire in a clearing: flames from a small heat simulation over crossed logs in a ring of stones, crackles throwing sparks, embers rising toward stars glimpsed through the canopy. The firelight breathes on the trunks around it; someone sits in stillness; an owl watches, a deer steps to the edge of the light, moths circle.",
     "params": {
       "speed": {
         "type": "range",
@@ -619,6 +683,14 @@
           0,
           1
         ]
+      },
+      "wildlife": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
       }
     }
   },
@@ -1000,7 +1072,7 @@
   },
   "waterfall": {
     "title": "Waterfall",
-    "hint": "Cascading waterfall through a mossy rock channel with a base mist/spray burst and an optional faint rainbow arc.",
+    "hint": "A living gorge: a river pours over the lip as a particle simulation, breaking into spray and churning foam that drifts downstream; the flow swells with rain; mist holds a rainbow. Dippers bob on stones, swifts nest behind the fall, trout leap at dusk, a kingfisher darts past and a deer comes down to drink, under a day and night.",
     "params": {
       "speed": {
         "type": "range",
@@ -1044,6 +1116,22 @@
           0,
           1
         ]
+      },
+      "cycleTime": {
+        "type": "range",
+        "min": 0,
+        "max": 30,
+        "step": 0.5,
+        "value": 8,
+        "integer": false
+      },
+      "wildlife": {
+        "type": "range",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1,
+        "integer": false
       }
     }
   },
@@ -1252,7 +1340,7 @@
   },
   "spiderweb": {
     "title": "Spider Web",
-    "hint": "A spider builds its web strand by strand, hunts drifting prey, flees wasp raids and bird strikes, and repairs the damage \u2014 all under a soft moonlight glow.",
+    "hint": "An orb weaver's night: she spins a real orb web \u2014 frame, radii, then the capture spiral from outside in \u2014 between garden twigs, silk swaying and beaded with moonlit dew. Moths blunder in and she runs out to wrap them; wasps send her to her leaf hide; birds tear through and she mends the damage thread by thread.",
     "params": {
       "speed": {
         "type": "range",
