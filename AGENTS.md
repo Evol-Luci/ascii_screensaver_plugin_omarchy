@@ -343,3 +343,16 @@ When creating or validating animations for the marketplace, two easily missed re
 - **`pkill -f <pattern>` from an agent's shell can kill the shell itself**
   when the pattern appears in the command line; use a bracket trick
   (`pkill -f "[p]review\.html"`) or close windows via `hyprctl` instead.
+
+## Idle inhibit: media playback
+
+`IdleMonitor { respectInhibitors: true }` (in upstream `omarchy.idle` and our
+clone alike) only honours the Wayland idle-inhibit protocol. Browsers ask to
+stay awake during video over D-Bus (`org.freedesktop.ScreenSaver`), which
+hypridle used to answer — nothing in the Omarchy shell owns that name, so
+video playback never held the screensaver off. `Service.qml` now watches
+MPRIS (`Quickshell.Services.Mpris`): while any player `isPlaying`, the
+IdleMonitor is disabled (resetting its countdown). PipeWire was considered
+and rejected: it exposes link state, not playing/paused, so a paused tab
+would still count as playing. Toggle: `stayAwakeForMedia` (General page).
+Check live with `omarchy-shell idle status` (`mediaPlaying`, `mediaInhibit`).

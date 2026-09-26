@@ -19,6 +19,7 @@ ColumnLayout {
   property int screensaverDelaySeconds: 150
   property int lockDelaySeconds: 300
   property bool barIconEnabled: true
+  property bool stayAwakeForMedia: true
 
   // Deliberately not named modeChanged/selectedAnimationChanged: QML
   // already generates those for the properties above, and redeclaring
@@ -30,6 +31,7 @@ ColumnLayout {
   signal lockDelayChanged(int seconds)
   signal previewRequested()
   signal barIconToggled(bool value)
+  signal stayAwakeForMediaToggled(bool value)
 
   // Clipboard operation state — one per button, kept simple.
   property string menuCopyStatus: ""   // "", "copied", "error"
@@ -109,6 +111,14 @@ ColumnLayout {
     step: 5
     integer: true
     onReleased: function (v) { root.lockDelayChanged(Math.round(v)) }
+  }
+
+  Toggle {
+    Layout.fillWidth: true
+    label: "Stay awake while media is playing"
+    description: "Hold off the screensaver and lock while a video or music is playing (YouTube in a browser, mpv, Spotify and other media players). The countdown starts over when playback stops."
+    checked: root.stayAwakeForMedia
+    onClicked: root.stayAwakeForMediaToggled(!root.stayAwakeForMedia)
   }
 
   Text {
