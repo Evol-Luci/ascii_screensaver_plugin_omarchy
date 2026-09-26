@@ -122,7 +122,12 @@ var DESCRIPTIONS = {
 // Only for names whose meaning genuinely shifts between animations.
 var OVERRIDES = {
   bonsai: {
-    speed: "How quickly the tree grows branch by branch."
+    speed: "How quickly time passes for the tree: growth, seasons and days.",
+    palette: "The kind of tree: juniper (evergreen), maple, sakura, flowering cherry, wisteria, or sumi-e ink.",
+    leafDensity: "How full and broad the foliage pads grow.",
+    holdTime: "Seconds the mature tree is kept before it returns to mist and a new seed falls.",
+    style: "Bonsai style: formal upright, informal upright, slanting, cascade, literati, windswept — or a different one each life.",
+    seasonTime: "Seconds per season. One day passes each season."
   },
   crawl: {
     speed: "How fast the text crawls up the screen."
