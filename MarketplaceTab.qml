@@ -96,6 +96,12 @@ ColumnLayout {
     onTriggered: {
       var xhr = new XMLHttpRequest()
       xhr.open("GET", root.indexUrl, true)
+      xhr.timeout = 10000
+      xhr.ontimeout = function() {
+        fetchRequest.active = false
+        root.fetchStatus = "error"
+        root.fetchError = "Request timed out after 10s — could not load marketplace index."
+      }
       xhr.onreadystatechange = function() {
         if (xhr.readyState !== XMLHttpRequest.DONE) return
         fetchRequest.active = false

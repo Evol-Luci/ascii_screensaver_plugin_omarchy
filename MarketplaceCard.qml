@@ -78,6 +78,7 @@ Rectangle {
         anchors.centerIn: parent
         visible: !previewImage.visible
         text: (root.entry.name || root.entry.id || "?").charAt(0).toUpperCase()
+        textFormat: Text.PlainText
         color: Color.muted
         font.family: Style.font.family
         font.pixelSize: Style.font.displayLarge
@@ -110,6 +111,7 @@ Rectangle {
     Text {
       Layout.fillWidth: true
       text: root.entry.name || root.entry.id || ""
+      textFormat: Text.PlainText
       color: Color.foreground
       font.family: Style.font.family
       font.pixelSize: Style.font.body
@@ -121,6 +123,7 @@ Rectangle {
       Layout.fillWidth: true
       visible: text !== ""
       text: root.entry.author || ""
+      textFormat: Text.PlainText
       color: Color.muted
       font.family: Style.font.family
       font.pixelSize: Style.font.caption
@@ -130,6 +133,7 @@ Rectangle {
       Layout.fillWidth: true
       visible: text !== ""
       text: root.entry.description || ""
+      textFormat: Text.PlainText
       color: Color.muted
       font.family: Style.font.family
       font.pixelSize: Style.font.caption

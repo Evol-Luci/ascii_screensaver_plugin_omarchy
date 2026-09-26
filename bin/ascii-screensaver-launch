@@ -98,16 +98,10 @@ fi
 walker -q 2>/dev/null
 CMD="${PLUGIN_ROOT}/bin/ascii-screensaver-cmd"
 SCREENSAVER_CLASS="org.omarchy.screensaver"
-
-# For user animations, extract description/author from manifest.json to pass as URL params
-# (fallback in case viewer.html's fetch to manifest.json is blocked by CORS)
-EXTRA_PARAMS=""
-if [[ -f "${USER_ANIMATIONS_DIR}/${ANIMATION}/manifest.json" ]] && command -v jq &>/dev/null; then
-  DESC=$(jq -r '.description // ""' "${USER_ANIMATIONS_DIR}/${ANIMATION}/manifest.json" 2>/dev/null)
-  AUTHOR=$(jq -r '.author // ""' "${USER_ANIMATIONS_DIR}/${ANIMATION}/manifest.json" 2>/dev/null)
-  if [[ -n "$DESC" ]]; then EXTRA_PARAMS="description=$(printf '%s' "$DESC" | jq -sRr @uri)&"; fi
-  if [[ -n "$AUTHOR" ]]; then EXTRA_PARAMS="${EXTRA_PARAMS}author=$(printf '%s' "$AUTHOR" | jq -sRr @uri)&"; fi
-fi
+# Chromium on Wayland ignores --class and names the window after the page it
+# opened: "chrome-_" (empty host + "_") + the file path with "/" turned into
+# "_" + "-Default".
+VIEWER_APP_ID="chrome-_${PLUGIN_ROOT//\//_}_system_viewer.html-Default"
 
 hypr_focus_monitor() {
   hyprctl dispatch "hl.dsp.focus({ monitor = \"$1\" })" >/dev/null 2>&1 \
@@ -147,7 +141,7 @@ exec {events}< <(socat -U - "UNIX-CONNECT:$SOCKET")
 wait_for_screensaver_window() {
   local line deadline=$((SECONDS + 5))
   while ((SECONDS < deadline)) && IFS= read -r -t $((deadline - SECONDS)) -u "$events" line; do
-    if [[ $line == openwindow\>\>*,"$SCREENSAVER_CLASS",* ]] || [[ $line == openwindow\>\>*ascii-screensaver_system_viewer* ]]; then
+    if [[ $line == openwindow\>\>*,"$SCREENSAVER_CLASS",* ]] || [[ $line == openwindow\>\>*,"$VIEWER_APP_ID",* ]]; then
       return 0
     fi
   done
@@ -162,12 +156,12 @@ start_at=$(( $(date +%s%3N) + 12000 ))
 if [[ "$FORCE" == "force" ]]; then
   # For panel previews, only launch on the active monitor
   hypr_focus_monitor "$focused"
-  hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" EXTRA_PARAMS="$EXTRA_PARAMS" bash "$CMD"
+  hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" bash "$CMD"
   wait_for_screensaver_window
 else
   for m in $(hyprctl monitors -j | jq -r '.[] | .name'); do
     hypr_focus_monitor "$m"
-    hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" EXTRA_PARAMS="$EXTRA_PARAMS" bash "$CMD"
+    hypr_exec env START_AT="$start_at" ANIMATION="$ANIMATION" bash "$CMD"
     wait_for_screensaver_window
   done
 fi
