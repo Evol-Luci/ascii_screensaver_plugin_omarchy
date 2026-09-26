@@ -354,5 +354,10 @@ video playback never held the screensaver off. `Service.qml` now watches
 MPRIS (`Quickshell.Services.Mpris`): while any player `isPlaying`, the
 IdleMonitor is disabled (resetting its countdown). PipeWire was considered
 and rejected: it exposes link state, not playing/paused, so a paused tab
-would still count as playing. Toggle: `stayAwakeForMedia` (General page).
-Check live with `omarchy-shell idle status` (`mediaPlaying`, `mediaInhibit`).
+would still count as playing. Setting: `mediaStayAwake` = `video` (default)
+| `all` | `off`, on the General page. MPRIS has no video flag, so
+`isVideoPlayer()` classifies: known music apps are music; audio file URLs
+and music sites are music; browsers are video unless the track has an album
+(YouTube Music etc. set one, YouTube videos don't); anything else is video.
+Check live with `omarchy-shell idle status` (`mediaPlaying`, `videoPlaying`,
+`mediaInhibit`).

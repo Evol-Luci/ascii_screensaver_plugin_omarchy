@@ -74,6 +74,44 @@ have been removed so new users start from a fully randomized, equal-weight exper
 
 ---
 
+## 4. Now Playing Over the Screensaver
+
+> Captured: 2026-09-26.
+
+**Goal:** When music is playing and the screensaver starts (by default only *video*
+holds it off — see `mediaStayAwake`), show what's playing, and let media keys control
+it without waking the screen.
+
+### Requirements
+
+- A small **now-playing card** over the running screensaver: track title, artist,
+  album art (MPRIS `mpris:artUrl`), a progress bar, and play/pause state. Unobtrusive —
+  a corner card in the same style as the viewer's info panel, fading in on track change
+  and dimming otherwise.
+- **Media keys don't dismiss the screensaver.** Play/Pause, Next, Previous and Stop
+  (XF86AudioPlay/Pause/Next/Prev/Stop, and ideally volume keys) pass through to the
+  player and just update the card. Any other key or mouse movement still dismisses.
+- Works on every monitor the screensaver runs on (or only the focused one — decide).
+- A General-page toggle to turn the card off.
+
+### Design notes / open questions
+
+- **Where the card lives.** The screensaver is a fullscreen Chromium window, so either:
+  (a) a Quickshell layer-shell panel (`WlrLayershell`, overlay layer) from the plugin,
+  drawn above Chromium — native QML, reads `Quickshell.Services.Mpris` directly; or
+  (b) inside `system/viewer.js`, fed track info by the plugin. (a) is likely simpler and
+  keeps the viewer sandbox untouched; check Hyprland stacks an overlay layer above a
+  fullscreen window.
+- **Media keys.** Today `viewer.js` dismisses on any `keydown`. Omarchy's media keys are
+  Hyprland binds, so Hyprland may consume them before Chromium sees them — verify. If
+  they do reach the page, `viewer.js` should ignore `MediaPlayPause`, `MediaTrackNext`,
+  `MediaTrackPrevious`, `MediaStop` (and `AudioVolume*`) in its dismiss handler. The
+  Service's idle logic must also not treat them as "activity" that cancels the cycle.
+- MPRIS already exposes everything needed (`trackTitle`, `trackArtist`, `trackAlbum`,
+  `trackArtUrl`, `position`, `length`, `playbackState`) — see `Service.qml`'s media code.
+
+---
+
 ## Related Files
 
 - `docs/specs/` — detailed design specs (created after brainstorming sessions)
