@@ -305,3 +305,41 @@ and silently re-add the very thing you're removing.
 When creating or validating animations for the marketplace, two easily missed requirements exist:
 1. **Valid Preview Images**: The `preview.gif` (or `.png`/`.jpg`) referenced in `manifest.json` MUST be a structurally valid binary image. Using a text file with dummy data (e.g., `echo "GIF89a" > preview.gif`) will silently break the Omarchy QML renderer and stop the marketplace UI from displaying properly.
 2. **Screensaver Dismiss Logic**: You do **NOT** need to implement dismiss logic. The Omarchy screensaver plugin wraps all animations in a unified system viewer that captures mouse/keyboard activity and automatically tears down the process.
+
+## The viewer, the live preview, and why Chromium's --class doesn't matter
+
+- **Chromium on Wayland ignores `--class`.** A window's app_id is
+  `"chrome-_" + <page path with "/" → "_"> + "-Default"`. So the
+  screensaver is `…_system_viewer.html-Default` and the settings panel's
+  live preview is `…_system_preview.html-Default` — two HTML entry points
+  (sharing `system/viewer.js`) exist only so they get different app_ids.
+  `Service.qml` and `bin/ascii-screensaver-launch` match the exact viewer
+  app_id; never match on a substring that would also catch the preview.
+- **The viewer owns the info panel and dismissal**, never the animation. It
+  strips `screensaver`, `meta_*`, `anim`, `path`, `state` before passing the
+  URL params to the animation, so leftover legacy boilerplate in an
+  animation is inert. Info-panel text comes from `meta_*` params computed by
+  `bin/ascii-screensaver-cmd` (manifest.json, else params.schema.json) and
+  is rendered with `textContent` — it is marketplace-supplied text.
+- **Marketplace animations are untrusted code.** They run in a
+  `sandbox="allow-scripts"` iframe, Chromium gets no
+  `--allow-file-access-from-files`, and all traffic goes to a dead proxy
+  except Google Fonts. Don't add `--allow-file-access-from-files` back or
+  `fetch()` local files from the viewer; pass data via URL params or JSONP
+  `<script src>` (which works file→file without that flag). Don't use
+  `--host-resolver-rules`: Chromium shows an "unsupported flag" bar for it.
+- **Live preview** (`LivePreview.qml`): `bin/ascii-screensaver-preview`
+  registers a runtime `hl.window_rule` then `exec`s Chromium; the panel polls
+  `hyprctl clients -j` and moves the window over `previewSlot` (resize
+  *before* move — Hyprland resizes around the centre). Settings reach the
+  page via `$XDG_RUNTIME_DIR/ascii-screensaver/preview-state.js` (JSONP,
+  written with FileView). It runs whenever an animation page is open —
+  there is no on/off switch — so `omarchy-shell shell toggle
+  'io.github.evol-luci.ascii-screensaver' '{"select":"bonsai"}'` is enough to
+  bring it up for testing. The panel is recreated on every open.
+- **Edits must replace, not mutate, config objects.** `Panel.commit()`
+  deep-copies `persistedConfig`: a binding that gets back the same JS object
+  doesn't update, which once made slider knobs snap back on release.
+- **`pkill -f <pattern>` from an agent's shell can kill the shell itself**
+  when the pattern appears in the command line; use a bracket trick
+  (`pkill -f "[p]review\.html"`) or close windows via `hyprctl` instead.

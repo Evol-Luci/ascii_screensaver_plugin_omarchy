@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# ASCII Screensaver — Live Preview Window
+#
+# Usage: ascii-screensaver-preview <animation-name> <state-file> <width> <height>
+#
+# Opens the small borderless Chromium window the settings panel shows inside
+# its preview slot. Panel.qml owns everything after launch: it keeps the
+# window glued to the slot and rewrites <state-file> (a JSONP file the page
+# polls) whenever a setting changes.
+#
+# Chromium is exec'd, so this process *is* the browser: when the panel stops
+# its Process, the window goes with it and nothing is left behind.
+
+set -euo pipefail
+
+PLUGIN_ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+ANIMATION="${1:?animation name required}"
+STATE_FILE="${2:?state file required}"
+WIDTH="${3:-480}"
+HEIGHT="${4:-270}"
+
+if [[ ! "$ANIMATION" =~ ^[A-Za-z0-9_-]+$ ]]; then
+  echo "ascii-screensaver-preview: invalid animation name '${ANIMATION}'" >&2
+  exit 1
+fi
+[[ "$WIDTH" =~ ^[0-9]+$ && "$HEIGHT" =~ ^[0-9]+$ ]] || { WIDTH=480; HEIGHT=270; }
+
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+USER_ANIMATIONS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/ascii-screensaver/animations"
+ANIM_HTML="${PLUGIN_ROOT}/animations/${ANIMATION}/index.html"
+[[ -f "$ANIM_HTML" ]] || ANIM_HTML="${USER_ANIMATIONS_DIR}/${ANIMATION}/index.html"
+if [[ ! -f "$ANIM_HTML" ]]; then
+  echo "ascii-screensaver-preview: unknown animation '${ANIMATION}'" >&2
+  exit 1
+fi
+
+PREVIEW_HTML="${PLUGIN_ROOT}/system/preview.html"
+
+# Chromium on Wayland ignores --class; the window's app_id is derived from the
+# page path instead. Register a rule for exactly that app_id *before* the
+# window maps, so it opens floating, unfocused and without decoration rather
+# than flashing into the tiled layout first. Rules added this way live until
+# the next config reload; re-adding one with the same name replaces it.
+APP_ID="chrome-_${PLUGIN_ROOT//\//_}_system_preview.html-Default"
+APP_ID_REGEX="^$(printf '%s' "$APP_ID" | sed 's/[][\.*^$()+?{}|]/\\&/g')\$"
+if [[ "$APP_ID_REGEX" != *"]=]"* ]]; then
+  hyprctl eval "hl.window_rule({
+    name = 'ascii-screensaver-preview',
+    match = { class = [=[${APP_ID_REGEX}]=] },
+    float = true,
+    no_initial_focus = true,
+    no_focus = true,
+    border_size = 0,
+    rounding = 0,
+    no_shadow = true,
+    no_blur = true,
+    no_anim = true,
+    no_dim = true,
+    tag = '-default-opacity',
+    opacity = '1 1',
+    size = { ${WIDTH}, ${HEIGHT} },
+  })" &>/dev/null || true
+fi
+
+RUN_DIR="${XDG_RUNTIME_DIR}/ascii-screensaver"
+mkdir -p "$RUN_DIR"
+
+URL="file://${PREVIEW_HTML}?anim=${ANIMATION}&path=file://${ANIM_HTML}&state=${STATE_FILE}"
+
+# Same lockdown as the real screensaver (see ascii-screensaver-cmd): no
+# network, no file access beyond the pages themselves.
+exec chromium \
+  --user-data-dir="${RUN_DIR}/preview-profile" \
+  --ozone-platform=wayland \
+  --app="$URL" \
+  --window-size="${WIDTH},${HEIGHT}" \
+  --no-first-run \
+  --no-default-browser-check \
+  --disable-extensions \
+  --disable-background-networking \
+  --disable-sync \
+  --disable-translate \
+  --disable-dev-shm-usage \
+  --proxy-server="127.0.0.1:9" \
+  --proxy-bypass-list="fonts.googleapis.com;fonts.gstatic.com;<-loopback>" \
+  --force-webrtc-ip-handling-policy=disable_non_proxied_udp \
+  --background-color=000000 \
+  2>>"${RUN_DIR}/chromium-errors.log"
