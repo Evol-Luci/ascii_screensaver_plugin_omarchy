@@ -1,7 +1,7 @@
 {
   "bonsai": {
     "title": "Bonsai",
-    "hint": "Procedural tree growth with leaf density and rest time between redraws.",
+    "hint": "A bonsai\u2019s life, told slowly: an ens\u014d is brushed onto the wall and a seed falls into the pot, then the tree grows year by year in one of six classic styles, through blossom, full leaf, autumn colour and bare winter branches under snow. An unseen gardener prunes it each summer; a bird visits, incense curls beside a stone lantern, and in time it returns to mist and a new seed falls.",
     "params": {
       "speed": {
         "type": "range",
@@ -37,6 +37,27 @@
         "max": 900,
         "step": 30,
         "value": 360,
+        "integer": true
+      },
+      "style": {
+        "type": "select",
+        "value": "random",
+        "options": [
+          "random",
+          "chokkan",
+          "moyogi",
+          "shakan",
+          "kengai",
+          "bunjingi",
+          "fukinagashi"
+        ]
+      },
+      "seasonTime": {
+        "type": "range",
+        "min": 5,
+        "max": 60,
+        "step": 1,
+        "value": 15,
         "integer": true
       }
     }
