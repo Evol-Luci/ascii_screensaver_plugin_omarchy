@@ -29,6 +29,12 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 USER_ANIMATIONS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/ascii-screensaver/animations"
 
+# The name becomes a path component below; never let it climb out.
+if [[ ! "$ANIMATION" =~ ^[A-Za-z0-9_-]+$ ]]; then
+  echo "ascii-screensaver-cmd: invalid animation name '${ANIMATION}'" >&2
+  exit 1
+fi
+
 ANIM_DIR="${PLUGIN_ROOT}/animations/${ANIMATION}/index.html"
 if [[ ! -f "$ANIM_DIR" ]]; then
   ANIM_DIR="${USER_ANIMATIONS_DIR}/${ANIMATION}/index.html"
@@ -70,8 +76,29 @@ fi
 [[ -n "${ANIM_PARAMS:-}" ]] && HTML_URL="${HTML_URL}&${ANIM_PARAMS}"
 [[ -n "${EXTRA_PARAMS:-}" ]] && HTML_URL="${HTML_URL}&${EXTRA_PARAMS}"
 
-if [[ "${PREVIEW:-}" == "1" ]]; then
-  HTML_URL="${HTML_URL}&preview_mode=1"
+# The info panel's title/description/author, computed here so animation
+# authors never write their own: from the animation's manifest.json when it
+# has one (marketplace installs), else from the bundled params.schema.json.
+# The viewer renders these as plain text, never HTML.
+if command -v jq &>/dev/null; then
+  MANIFEST="$(dirname "$ANIM_DIR")/manifest.json"
+  META_PARAMS=""
+  if [[ -f "$MANIFEST" ]]; then
+    META_PARAMS=$(jq -r '
+      [["meta_title", .name], ["meta_description", .description], ["meta_author", .author]]
+      | map(select(.[1] | type == "string" and length > 0) | "\(.[0])=\(.[1] | @uri)")
+      | join("&")
+    ' "$MANIFEST" 2>/dev/null)
+  fi
+  if [[ -z "$META_PARAMS" && -f "${PLUGIN_ROOT}/params.schema.json" ]]; then
+    META_PARAMS=$(jq -r --arg name "$ANIMATION" '
+      .[$name] // empty
+      | [["meta_title", .title], ["meta_description", .hint], ["meta_author", "Evol Digital Productions"]]
+      | map(select(.[1] | type == "string" and length > 0) | "\(.[0])=\(.[1] | @uri)")
+      | join("&")
+    ' "${PLUGIN_ROOT}/params.schema.json" 2>/dev/null)
+  fi
+  [[ -n "$META_PARAMS" ]] && HTML_URL="${HTML_URL}&${META_PARAMS}"
 fi
 
 exit_screensaver() {
@@ -83,10 +110,8 @@ exit_screensaver() {
 
 trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
 
-if [[ "${PREVIEW:-}" != "1" ]]; then
-  hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null \
-    || hyprctl keyword cursor:invisible true &>/dev/null
-fi
+hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null \
+  || hyprctl keyword cursor:invisible true &>/dev/null
 
 RUN_DIR="${XDG_RUNTIME_DIR}/ascii-screensaver"
 mkdir -p "$RUN_DIR"
@@ -95,31 +120,19 @@ CHROMIUM_ERROR_LOG="${RUN_DIR}/chromium-errors.log"
 
 # Use --app=URL (app mode) so window.close() works for dismiss logic.
 # --start-fullscreen makes the app window open fullscreen (required for screensaver).
-if [[ "${PREVIEW:-}" == "1" ]]; then
-  SCREENSAVER_CLASS="ascii-screensaver-preview"
-  CHROMIUM_FLAGS="--window-size=600,450"
-  (
-    for i in {1..30}; do
-      if hyprctl clients -j | grep -q '"title": "Screensaver Preview"'; then
-        hyprctl eval 'hl.dispatch(hl.dsp.window.float("title:Screensaver Preview"))' &>/dev/null
-        hyprctl eval 'hl.dispatch(hl.dsp.window.pin("title:Screensaver Preview"))' &>/dev/null
-        hyprctl eval 'hl.dispatch(hl.dsp.window.resize({ x=600, y=450, window="title:Screensaver Preview" }))' &>/dev/null
-        hyprctl eval 'hl.dispatch(hl.dsp.window.center("title:Screensaver Preview"))' &>/dev/null
-        break
-      fi
-      sleep 0.1
-    done
-  ) &
-else
-  CHROMIUM_FLAGS="--start-fullscreen"
-fi
-
+# Marketplace animations are third-party code, so the window gets no network
+# and no --allow-file-access-from-files: the viewer needs neither, and
+# together with its sandboxed iframe that leaves an animation nothing to read
+# and nowhere to send it. Every request goes to a dead proxy except Google
+# Fonts (the animations' JetBrains Mono @import — offline it would silently
+# fall back to Courier New); `<-loopback>` stops localhost skipping the proxy.
+# (Not --host-resolver-rules: Chromium shows an "unsupported flag" bar for it.)
 chromium \
   --class="$SCREENSAVER_CLASS" \
   --user-data-dir="$CHROMIUM_USER_DATA_DIR" \
   --ozone-platform=wayland \
   --app="$HTML_URL" \
-  $CHROMIUM_FLAGS \
+  --start-fullscreen \
   --no-first-run \
   --no-default-browser-check \
   --disable-extensions \
@@ -127,7 +140,9 @@ chromium \
   --disable-sync \
   --disable-translate \
   --disable-dev-shm-usage \
-  --allow-file-access-from-files \
+  --proxy-server="127.0.0.1:9" \
+  --proxy-bypass-list="fonts.googleapis.com;fonts.gstatic.com;<-loopback>" \
+  --force-webrtc-ip-handling-policy=disable_non_proxied_udp \
   --background-color=000000 \
   2>>"$CHROMIUM_ERROR_LOG"
 

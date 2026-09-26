@@ -35,6 +35,11 @@ Item {
   readonly property bool idleEnabled: stayAwakeStateLoaded && !stayAwake
   readonly property string screensaverClass: "org.omarchy.screensaver"
   readonly property string pluginDir: String(Qt.resolvedUrl(".")).replace(/^file:\/\//, "").replace(/\/$/, "")
+  // Chromium on Wayland ignores --class and derives the window's app_id from
+  // the page path instead, so this is what the screensaver windows are
+  // actually called. The settings panel's live preview opens preview.html,
+  // so it gets a different app_id and is never mistaken for a screensaver.
+  readonly property string viewerAppId: "chrome-_" + pluginDir.replace(/\//g, "_") + "_system_viewer.html-Default"
 
   property bool stayAwake: false
   property bool stayAwakeStateLoaded: false
@@ -173,7 +178,7 @@ Item {
     if (name === "openwindow") {
       var open = eventParts(event, 4)
       var cls = String(open[2] || "")
-      if (cls === root.screensaverClass || cls.indexOf("ascii-screensaver_system_viewer") !== -1) {
+      if (cls === root.screensaverClass || cls === root.viewerAppId) {
         root.handleScreensaverWindowOpened(open[0])
       }
     } else if (name === "closewindow") {

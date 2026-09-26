@@ -31,6 +31,7 @@ Rectangle {
     Text {
       Layout.fillWidth: true
       text: root.title
+      textFormat: Text.PlainText
       color: root.selected ? Color.menu.selectedText : Color.foreground
       font.family: Style.font.family
       font.pixelSize: Style.font.subtitle
@@ -41,6 +42,7 @@ Rectangle {
       Layout.fillWidth: true
       visible: root.subtitle !== ""
       text: root.subtitle
+      textFormat: Text.PlainText
       color: Color.muted
       font.family: Style.font.family
       font.pixelSize: Style.font.caption
