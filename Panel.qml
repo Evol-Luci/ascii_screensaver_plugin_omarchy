@@ -23,6 +23,8 @@ Item {
   property var userSchema: ({})
   property var persistedConfig: ({ enabled: true, mode: "random", selectedAnimation: "terrarium", animations: [] })
   property bool configLoaded: false
+  // Config text waiting for its directory to be created (first save only).
+  property string _pendingConfigText: ""
 
   // "" is the welcome pane, "general" the shared settings, anything else
   // is an animation name.
@@ -77,16 +79,28 @@ Item {
 
   // Reassigning the property is what makes QML re-evaluate the bindings
   // that read it; mutating the object in place changes the data silently
-  // and leaves the panel showing stale values.
+  // and leaves the panel showing stale values. The copy has to be deep: an
+  // edit mutates an entry nested inside, and a binding that gets back the
+  // *same* entry object (AnimationDetail.entry) sees no change — so a
+  // slider knob snapped back to its old value on release even though the
+  // new one was saved.
   function commit() {
-    root.persistedConfig = Object.assign({}, root.persistedConfig)
+    root.persistedConfig = JSON.parse(JSON.stringify(root.persistedConfig))
     root.saveConfig()
   }
 
+  // Always saves to the user config, never the bundled one: the bundled
+  // file lives in the plugin checkout and is overwritten by updates.
   function saveConfig() {
     var text = JSON.stringify(root.persistedConfig, null, 2) + "\n"
-    if (userConfigFile.loaded) userConfigFile.setText(text)
-    else bundledConfigFile.setText(text)
+    if (userConfigFile.loaded) {
+      userConfigFile.setText(text)
+      return
+    }
+    // No user config yet (first save on this machine): create its directory,
+    // then write it once that has finished.
+    root._pendingConfigText = text
+    if (!ensureUserConfigDir.running) ensureUserConfigDir.running = true
   }
 
   function parsePersistedConfig(jsonText) {
@@ -257,6 +271,32 @@ Item {
       updated[name] = schemaEntry
       root.userSchema = updated
     }
+  }
+
+  Process {
+    id: ensureUserConfigDir
+    running: false
+    command: ["mkdir", "-p", ConfigPaths.userConfigPath().replace(/\/[^/]+$/, "")]
+    onExited: {
+      var text = root._pendingConfigText
+      root._pendingConfigText = ""
+      if (text !== "") userConfigFile.setText(text)
+    }
+  }
+
+  // An animation page is showing (not the welcome, General or Marketplace
+  // page) — the only place the live preview can appear.
+  readonly property bool animationPageShown: root.selection !== "" && root.selection !== "general"
+    && root.selection !== "marketplace"
+
+  LivePreview {
+    id: livePreview
+    pluginDir: root.pluginDir
+    panelTitle: window.title
+    animationName: root.animationPageShown ? root.selection : ""
+    available: window.visible && root.animationPageShown && previewSlot.visible
+    slot: previewSlot
+    params: root.entryFor(root.selection).params || ({})
   }
 
   FloatingWindow {
@@ -450,133 +490,166 @@ Item {
           Layout.fillHeight: true
           visible: !window.narrow || root.selection !== ""
 
-          ScrollView {
-            id: detailScroll
+          ColumnLayout {
             anchors.fill: parent
-            contentWidth: availableWidth
-            clip: true
+            spacing: 0
 
-            ColumnLayout {
-              // Binding to the ScrollView's availableWidth (rather than
-              // parent.width) is what makes the pane reflow when the window
-              // is resized.
-              width: detailScroll.availableWidth
-              spacing: Style.spacing.lg
+            // The live preview's Chromium window is placed exactly over this
+            // (see LivePreview.qml). It sits outside the ScrollView so it never
+            // scrolls out from under the window.
+            Rectangle {
+              id: previewSlot
+              visible: root.animationPageShown
+              Layout.alignment: Qt.AlignHCenter
+              Layout.topMargin: Style.spacing.md
+              Layout.leftMargin: Style.spacing.xl
+              Layout.rightMargin: Style.spacing.xl
+              Layout.preferredWidth: Math.min(parent.width - 2 * Style.spacing.xl, Style.space(680),
+                                              window.height * 0.4 * 16 / 9)
+              Layout.preferredHeight: Layout.preferredWidth * 9 / 16
+              color: "#000000"
+              radius: Style.cornerRadius
+              border.color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.15)
+              border.width: Style.normalBorderWidth
 
-              Item { Layout.preferredHeight: Style.spacing.md }
-
-              Button {
-                Layout.leftMargin: Style.spacing.xl
-                visible: window.narrow
-                text: "Back"
-                onClicked: root.selection = ""
+              // Only seen until the window appears on top of it.
+              Text {
+                anchors.centerIn: parent
+                text: "Starting preview…"
+                color: Color.muted
+                font.family: Style.font.family
+                font.pixelSize: Style.font.caption
               }
+            }
 
-              WelcomePane {
-                Layout.fillWidth: true
-                Layout.maximumWidth: Style.space(680)
-                Layout.leftMargin: Style.spacing.xl
-                Layout.rightMargin: Style.spacing.xl
-                visible: root.selection === ""
-                animationCount: root.animationNames.length
-                enabledCount: root.enabledCount()
-                marketplaceCount: root.marketplaceInstalledCount
-                mode: root.persistedConfig.mode || "random"
-              }
+            ScrollView {
+              id: detailScroll
+              Layout.fillWidth: true
+              Layout.fillHeight: true
+              contentWidth: availableWidth
+              clip: true
 
-              GeneralDetail {
-                Layout.fillWidth: true
-                Layout.maximumWidth: Style.space(680)
-                Layout.leftMargin: Style.spacing.xl
-                Layout.rightMargin: Style.spacing.xl
-                visible: root.selection === "general"
-                screensaverEnabled: root.persistedConfig.enabled !== false
-                mode: root.persistedConfig.mode || "random"
-                selectedAnimation: root.persistedConfig.selectedAnimation || "terrarium"
-                animationOptions: root.animationNames
-                barIconEnabled: root.persistedConfig.showBarIcon !== false
-                screensaverDelaySeconds: root.persistedConfig.screensaverDelaySeconds !== undefined
-                  ? root.persistedConfig.screensaverDelaySeconds : 150
-                lockDelaySeconds: root.persistedConfig.lockDelaySeconds !== undefined
-                  ? root.persistedConfig.lockDelaySeconds : 300
+              ColumnLayout {
+                // Binding to the ScrollView's availableWidth (rather than
+                // parent.width) is what makes the pane reflow when the window
+                // is resized.
+                width: detailScroll.availableWidth
+                spacing: Style.spacing.lg
 
-                onEnabledToggled: function (value) {
-                  root.persistedConfig.enabled = value
-                  root.commit()
+                Item { Layout.preferredHeight: Style.spacing.md }
+
+                Button {
+                  Layout.leftMargin: Style.spacing.xl
+                  visible: window.narrow
+                  text: "Back"
+                  onClicked: root.selection = ""
                 }
-                onModeSelected: function (value) {
-                  root.persistedConfig.mode = value
-                  root.commit()
+
+                WelcomePane {
+                  Layout.fillWidth: true
+                  Layout.maximumWidth: Style.space(680)
+                  Layout.leftMargin: Style.spacing.xl
+                  Layout.rightMargin: Style.spacing.xl
+                  visible: root.selection === ""
+                  animationCount: root.animationNames.length
+                  enabledCount: root.enabledCount()
+                  marketplaceCount: root.marketplaceInstalledCount
+                  mode: root.persistedConfig.mode || "random"
                 }
-                onAnimationSelected: function (value) {
-                  root.persistedConfig.selectedAnimation = value
-                  root.commit()
-                }
-                onScreensaverDelayChanged: function (seconds) {
-                  root.persistedConfig.screensaverDelaySeconds = seconds
-                  root.commit()
-                }
-                onLockDelayChanged: function (seconds) {
-                  root.persistedConfig.lockDelaySeconds = seconds
-                  root.commit()
-                }
-                onBarIconToggled: function (value) {
-                  root.persistedConfig.showBarIcon = value
-                  root.commit()
-                }
-                onPreviewRequested: Quickshell.execDetached(["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force"])
-              }
 
+                GeneralDetail {
+                  Layout.fillWidth: true
+                  Layout.maximumWidth: Style.space(680)
+                  Layout.leftMargin: Style.spacing.xl
+                  Layout.rightMargin: Style.spacing.xl
+                  visible: root.selection === "general"
+                  screensaverEnabled: root.persistedConfig.enabled !== false
+                  mode: root.persistedConfig.mode || "random"
+                  selectedAnimation: root.persistedConfig.selectedAnimation || "terrarium"
+                  animationOptions: root.animationNames
+                  barIconEnabled: root.persistedConfig.showBarIcon !== false
+                  screensaverDelaySeconds: root.persistedConfig.screensaverDelaySeconds !== undefined
+                    ? root.persistedConfig.screensaverDelaySeconds : 150
+                  lockDelaySeconds: root.persistedConfig.lockDelaySeconds !== undefined
+                    ? root.persistedConfig.lockDelaySeconds : 300
 
-              AnimationDetail {
-                Layout.fillWidth: true
-                Layout.maximumWidth: Style.space(680)
-                Layout.leftMargin: Style.spacing.xl
-                Layout.rightMargin: Style.spacing.xl
-                visible: root.selection !== "" && root.selection !== "general" && root.selection !== "marketplace"
-                animationName: root.selection
-                isUserInstalled: root.userSchema[root.selection] !== undefined
-                onUninstallRequested: root.uninstallAnimation(root.selection)
-                animationSchema: root.schemaFor(root.selection) || ({ title: root.selection, params: ({}) })
-                entry: root.entryFor(root.selection)
-                randomMode: root.randomMode
-
-                onEnabledToggled: function (value) { root.setAnimationEnabled(root.selection, value) }
-                onWeightChanged: function (weight) { root.setAnimationWeight(root.selection, weight) }
-                onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
-                onPreviewRequested: Quickshell.execDetached(
-
-                  ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
-              }
-
-              MarketplaceTab {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                visible: root.selection === "marketplace"
-                installedIds: root.animationNames
-                builtinIds: Object.keys(root.schema)
-                userAnimationsDir: ConfigPaths.userAnimationsDir()
-
-                onAnimationInstalled: function(animId, schemaEntry) {
-                  // schemaEntry is null when animId is a built-in being
-                  // un-hidden rather than a real marketplace download.
-                  if (schemaEntry === null) {
-                    root.reinstallBuiltin(animId)
-                    return
+                  onEnabledToggled: function (value) {
+                    root.persistedConfig.enabled = value
+                    root.commit()
                   }
-                  var updated = Object.assign({}, root.userSchema)
-                  updated[animId] = schemaEntry
-                  root.userSchema = updated
-                  root.ensureEntry(animId)
-                  root.commit()
+                  onModeSelected: function (value) {
+                    root.persistedConfig.mode = value
+                    root.commit()
+                  }
+                  onAnimationSelected: function (value) {
+                    root.persistedConfig.selectedAnimation = value
+                    root.commit()
+                  }
+                  onScreensaverDelayChanged: function (seconds) {
+                    root.persistedConfig.screensaverDelaySeconds = seconds
+                    root.commit()
+                  }
+                  onLockDelayChanged: function (seconds) {
+                    root.persistedConfig.lockDelaySeconds = seconds
+                    root.commit()
+                  }
+                  onBarIconToggled: function (value) {
+                    root.persistedConfig.showBarIcon = value
+                    root.commit()
+                  }
+                  onPreviewRequested: Quickshell.execDetached(["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force"])
                 }
-                onAnimationUninstalled: function(animId) {
-                  root.uninstallAnimation(animId)
+
+
+                AnimationDetail {
+                  Layout.fillWidth: true
+                  Layout.maximumWidth: Style.space(680)
+                  Layout.leftMargin: Style.spacing.xl
+                  Layout.rightMargin: Style.spacing.xl
+                  visible: root.selection !== "" && root.selection !== "general" && root.selection !== "marketplace"
+                  animationName: root.selection
+                  isUserInstalled: root.userSchema[root.selection] !== undefined
+                  onUninstallRequested: root.uninstallAnimation(root.selection)
+                  animationSchema: root.schemaFor(root.selection) || ({ title: root.selection, params: ({}) })
+                  entry: root.entryFor(root.selection)
+                  randomMode: root.randomMode
+
+                  onEnabledToggled: function (value) { root.setAnimationEnabled(root.selection, value) }
+                  onWeightChanged: function (weight) { root.setAnimationWeight(root.selection, weight) }
+                  onParamEdited: function (paramName, value) { root.setParamValue(root.selection, paramName, value) }
+                  onPreviewRequested: Quickshell.execDetached(
+                    ["bash", root.pluginDir + "/bin/ascii-screensaver-launch", "force", root.selection])
                 }
+
+                MarketplaceTab {
+                  Layout.fillWidth: true
+                  Layout.fillHeight: true
+                  visible: root.selection === "marketplace"
+                  installedIds: root.animationNames
+                  builtinIds: Object.keys(root.schema)
+                  userAnimationsDir: ConfigPaths.userAnimationsDir()
+
+                  onAnimationInstalled: function(animId, schemaEntry) {
+                    // schemaEntry is null when animId is a built-in being
+                    // un-hidden rather than a real marketplace download.
+                    if (schemaEntry === null) {
+                      root.reinstallBuiltin(animId)
+                      return
+                    }
+                    var updated = Object.assign({}, root.userSchema)
+                    updated[animId] = schemaEntry
+                    root.userSchema = updated
+                    root.ensureEntry(animId)
+                    root.commit()
+                  }
+                  onAnimationUninstalled: function(animId) {
+                    root.uninstallAnimation(animId)
+                  }
+                }
+
+
+                Item { Layout.preferredHeight: Style.spacing.xl }
               }
-
-
-              Item { Layout.preferredHeight: Style.spacing.xl }
             }
           }
         }
