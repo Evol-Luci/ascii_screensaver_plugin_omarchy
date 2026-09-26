@@ -1,5 +1,7 @@
 # Plan B: Plugin Install/Uninstall + Marketplace Tab
 
+> **Status:** Implemented (2026-09-20). Historical plan — checkboxes were not maintained. See AGENTS.md for how the Marketplace install/uninstall pipeline ended up (per-job install queue, scan re-entrancy guard, config self-reload race).
+
 > **For agentic workers:** Use `executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add first-class install/uninstall support to every animation in the plugin panel, and add a Marketplace tab that fetches, browses, and installs animations from the `ascii-screensaver-animations` monorepo.

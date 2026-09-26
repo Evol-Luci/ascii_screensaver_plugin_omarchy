@@ -81,7 +81,7 @@ ColumnLayout {
     Text {
       Layout.fillWidth: true
       text: root.isUserInstalled
-        ? "Removes this animation from your panel and rotation. Files stay on disk."
+        ? "Removes this animation from your panel and rotation, and deletes its downloaded files. Reinstall it from the Marketplace tab."
         : "Removes this animation from your panel and rotation. Re-install it from the Marketplace tab."
       color: Color.muted
       font.family: Style.font.family

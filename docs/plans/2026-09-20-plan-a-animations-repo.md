@@ -1,5 +1,7 @@
 # Plan A: Animations Monorepo Implementation Plan
 
+> **Status:** Implemented (2026-09-20). Historical plan — checkboxes were not maintained. The live repo has since diverged (hardened validation, base-branch CI, motion-checked renders); see its CONTRIBUTING.md.
+
 > **For agentic workers:** Use `executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Create the `ascii-screensaver-animations` GitHub monorepo with all 30 built-in animations migrated, a machine-readable `index.json`, a CI gate that auto-rejects bad PRs, and a GitHub Actions bot that auto-updates `index.json` on merge.

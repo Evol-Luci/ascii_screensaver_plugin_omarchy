@@ -1,8 +1,9 @@
 # Design Spec: Animations Marketplace & Install/Uninstall System
 
+> **Status:** Implemented (2026-09-20). Kept as a historical record. Since then: the CI validator runs from the base branch and checks much more (manifest text, params, network/file APIs, resize handling), and the live render checks for motion — see the animations repo's CONTRIBUTING.md. Current state: README.md and docs/TODO.md §1–§2.
+
 **Date:** 2026-09-20
 **Project:** ascii_screensaver_plugin_omarchy
-**Status:** Approved — ready for implementation planning
 
 ---
 

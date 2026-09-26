@@ -1,5 +1,7 @@
 # Live Preview Implementation Plan
 
+> **Status:** Superseded — see the note at the top of the matching spec. Historical plan.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement a hot-reloading floating Live Preview window for the ascii-screensaver Omarchy panel.
