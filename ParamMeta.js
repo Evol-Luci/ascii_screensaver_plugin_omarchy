@@ -151,6 +151,34 @@ var OVERRIDES = {
   aquarium: {
     cycleTime: "Minutes for one full day-night cycle. 0 holds a fixed time of day."
   },
+  moon: {
+    cycleTime: "Minutes for the moon to pass through a whole month of phases. 0 keeps tonight's real moon.",
+    constellations: "Show the zodiac constellations along the ecliptic behind the moon.",
+    captions: "Name the phase, the sign the moon is in, and a thought for the phase.",
+    floaterFreq: "How often an owl, a bat or a skein of geese crosses the moon.",
+    stars: "Number of stars in the sky."
+  },
+  aurora: {
+    activity: "How lively the sky is: how long it stays quiet between substorms.",
+    bands: "Number of aurora curtains."
+  },
+  thunderstorm: {
+    cycleTime: "Minutes for a whole storm to gather, break, peak and clear. 0 is an endless storm.",
+    palette: "The place: plains, tropical coast, desert, arctic, or monochrome."
+  },
+  campfire: {
+    wildlife: "How often the forest's creatures come to the edge of the firelight."
+  },
+  incense: {
+    stickCount: "Number of incense sticks burning in the bowl.",
+    glowIntensity: "Brightness of the candlelight.",
+    breath: "Let the mandala swell and settle in a slow breathing rhythm (in 4, hold 2, out 6)."
+  },
+  waterfall: {
+    cycleTime: "Minutes for one full day-night cycle. 0 holds a fixed afternoon.",
+    wildlife: "How much life visits the gorge: dippers, trout, kingfishers, deer.",
+    flowDensity: "How much water pours over the fall. It also swells and ebbs with passing rain."
+  },
   boids: {
     cycleTime: "Minutes for one full day, dusk murmuration included. 0 holds a fixed late afternoon.",
     palette: "Season: summer meadow, falling autumn leaves, winter snow, or monochrome.",
