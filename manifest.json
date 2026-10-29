@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.evol-luci.ascii-screensaver",
   "name": "ASCII Screensaver",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "author": "Luci Evol",
   "license": "GPL-3.0-only",
   "description": "Multi-animation ASCII screensaver (30 animations) for Omarchy Quattro, triggered on idle via an omarchy.idle clone and rendered in a Chromium kiosk window per monitor.",
