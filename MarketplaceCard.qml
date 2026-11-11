@@ -15,6 +15,9 @@ Rectangle {
   property var entry: ({})
   property bool installed: false
   property bool installing: false
+  // Last install attempt was refused or failed; the button offers a retry
+  // rather than looking like nothing happened.
+  property bool failed: false
 
   signal installClicked()
   signal uninstallClicked()
@@ -144,7 +147,9 @@ Rectangle {
 
     Button {
       Layout.fillWidth: true
-      text: root.installing ? "Installing…" : (root.installed ? "Uninstall" : "Install")
+      text: root.installing
+        ? "Installing…"
+        : (root.installed ? "Uninstall" : (root.failed ? "Retry install" : "Install"))
       enabled: !root.installing
       onClicked: root.installed ? root.uninstallClicked() : root.installClicked()
     }

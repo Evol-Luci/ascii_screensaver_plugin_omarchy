@@ -6,6 +6,7 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import "ParamMeta.js" as ParamMeta
+import "MarketplaceValidation.js" as MarketplaceValidation
 
 // Settings that apply to the screensaver as a whole, rather than to one
 // animation.
@@ -319,7 +320,9 @@ ColumnLayout {
     spacing: Style.spacing.md
 
     Button {
-      text: root.hotkeyCopyStatus === "copied" ? "Copied!" : (root.hotkeyCopyStatus === "error" ? "Copy failed" : "Copy snippet")
+      text: root.hotkeyCopyStatus === "copied"
+        ? "Copied!"
+        : ((root.hotkeyCopyStatus === "error" || root.hotkeyCopyStatus === "invalid") ? "Copy failed" : "Copy snippet")
       enabled: root.hotkeyCopyStatus !== "copied"
       onClicked: hotkeyCopyProc.run()
     }
@@ -328,6 +331,16 @@ ColumnLayout {
       visible: root.hotkeyCopyStatus === "copied"
       text: "Paste into ~/.config/hypr/hyprland.conf"
       color: Color.muted
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+      wrapMode: Text.WordWrap
+      Layout.fillWidth: true
+    }
+
+    Text {
+      visible: root.hotkeyCopyStatus === "invalid"
+      text: "That isn't a key name — use letters, digits or underscores, like F12 or XF86_AudioPlay."
+      color: Color.urgent
       font.family: Style.font.family
       font.pixelSize: Style.font.caption
       wrapMode: Text.WordWrap
@@ -347,12 +360,23 @@ ColumnLayout {
 
   // ── Clipboard processes ────────────────────────────────────────────── //
 
+  // Both copy paths hand the snippet to wl-copy as a single argv element.
+  // They used to build `bash -c "printf '%s' <JSON.stringify(snippet)> | wl-copy"`:
+  // JSON quoting is not shell quoting, so inside those double quotes `$(...)`
+  // and backticks were still expanded by bash, and an operation presented as
+  // "copy this text" could execute part of it. `--` keeps a snippet that
+  // starts with a dash from being read as an option, and -n preserves the
+  // old no-trailing-newline behaviour of printf '%s'.
+  function _copyCommand(snippet) {
+    return ["wl-copy", "-n", "--", snippet]
+  }
+
   Process {
     id: menuCopyProc
 
     function run() {
       var snippet = "\"setup.ascii-screensaver\": {\n  \"icon\": \"󱄄\",\n  \"label\": \"ASCII Screensaver\",\n  \"action\": \"omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'\"\n}"
-      menuCopyProc.command = ["bash", "-c", "printf '%s' " + JSON.stringify(snippet) + " | wl-copy"]
+      menuCopyProc.command = root._copyCommand(snippet)
       menuCopyProc.running = true
     }
 
@@ -374,8 +398,14 @@ ColumnLayout {
 
     function run() {
       var key = root.hotkeyText.trim() !== "" ? root.hotkeyText.trim() : "F12"
+      // Defence in depth: the snippet no longer passes through a shell, but a
+      // key that isn't a key would produce a broken binding anyway.
+      if (!MarketplaceValidation.isValidHotkeyKey(key)) {
+        root.hotkeyCopyStatus = "invalid"
+        return
+      }
       var snippet = "bind = SUPER, " + key + ", exec, omarchy-shell shell summon io.github.evol-luci.ascii-screensaver '{}'"
-      hotkeyCopyProc.command = ["bash", "-c", "printf '%s' " + JSON.stringify(snippet) + " | wl-copy"]
+      hotkeyCopyProc.command = root._copyCommand(snippet)
       hotkeyCopyProc.running = true
     }
 

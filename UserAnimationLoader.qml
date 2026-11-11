@@ -39,7 +39,11 @@ Item {
   // Step 1: list subdirectory names
   Process {
     id: listProcess
-    command: ["bash", "-c", "ls -1 '" + root.animationsDir + "' 2>/dev/null || true"]
+    // The directory goes in as a positional argument, not interpolated into
+    // the script text — single quotes around an interpolated path are not
+    // quoting. The shell is kept only for "no such directory is not an
+    // error", which keeps a clean first run out of the journal.
+    command: ["bash", "-c", "ls -1 -- \"$1\" 2>/dev/null || true", "bash", root.animationsDir]
     running: false
     stdout: SplitParser {
       onRead: function(line) {

@@ -5,8 +5,12 @@ import Quickshell
 import Quickshell.Io
 import qs.Commons
 import qs.Ui
+import "MarketplaceValidation.js" as MarketplaceValidation
 
 // Marketplace tab: browses and installs animations from the community repo.
+// Everything in index.json is community-submitted and therefore untrusted:
+// ids, file names and URLs all go through MarketplaceValidation before they
+// reach a filesystem path or a process argument.
 ColumnLayout {
   id: root
   spacing: 0
@@ -120,7 +124,19 @@ ColumnLayout {
   function _parseIndex() {
     try {
       var parsed = JSON.parse(root._rawJson)
-      root.marketplaceEntries = parsed.animations || []
+      // Validate before anything is shown or installable. An entry we cannot
+      // vouch for is dropped rather than repaired — we cannot know which part
+      // of it was intended.
+      var checked = MarketplaceValidation.validateIndex(parsed.animations || [], root.userAnimationsDir)
+      var entries = []
+      var filesById = ({})
+      for (var i = 0; i < checked.entries.length; i++) {
+        entries.push(checked.entries[i].entry)
+        filesById[checked.entries[i].entry.id] = checked.entries[i].files
+      }
+      root.marketplaceEntries = entries
+      root._validatedFiles = filesById
+      root.rejectedEntries = checked.rejected
       root.fetchStatus = "ready"
     } catch(e) {
       root.fetchStatus = "error"
@@ -148,6 +164,16 @@ ColumnLayout {
   // Ids currently queued or downloading, so a card can show "Installing…"
   // and a second click on the same card doesn't queue a redundant job.
   property var installingIds: []
+  // Per-entry validated file list, keyed by animation id, built in
+  // _parseIndex. The install path reads destinations from here and never
+  // rebuilds a path out of index data.
+  property var _validatedFiles: ({})
+  // Entries the index offered that we refused, for the "N hidden" note.
+  property var rejectedEntries: []
+  // Ids whose last install attempt failed, so the card can say so instead of
+  // silently claiming success.
+  property var failedIds: []
+  property string installError: ""
 
   function installAnimation(entry) {
     if (root.builtinIds.indexOf(entry.id) !== -1) {
@@ -155,8 +181,29 @@ ColumnLayout {
       return
     }
     if (root.installingIds.indexOf(entry.id) !== -1) return
+
+    // Re-validate at the point of use rather than trusting that this entry
+    // came from the filtered list — installAnimation is reachable from the
+    // card delegate with whatever modelData holds.
+    var checked = MarketplaceValidation.validateEntry(entry, root.userAnimationsDir)
+    if (!checked.ok) {
+      root.installError = "Refused to install \"" + (entry && entry.id ? entry.id : "(unnamed)")
+        + "\": " + checked.reason + "."
+      if (entry && entry.id && root.failedIds.indexOf(entry.id) === -1) {
+        root.failedIds = root.failedIds.concat([entry.id])
+      }
+      return
+    }
+
+    root.failedIds = root.failedIds.filter(function(id) { return id !== entry.id })
     root.installingIds = root.installingIds.concat([entry.id])
-    root._installJobs.push({ entry: entry, files: entry.files || [], fileIndex: 0 })
+    root._installJobs.push({
+      entry: entry,
+      id: checked.id,
+      files: checked.files,
+      destDir: root.userAnimationsDir + "/" + checked.id,
+      fileIndex: 0
+    })
     if (!root._installBusy) _processNextJob()
   }
 
@@ -166,31 +213,55 @@ ColumnLayout {
       return
     }
     root._installBusy = true
-    _downloadNextFile(root._installJobs[0])
+    _prepareJobDir(root._installJobs[0])
+  }
+
+  // Clear the entry's directory before writing into it, so a symlink left
+  // behind by an earlier install can't redirect curl's -o target; curl's
+  // --create-dirs then recreates it as a real directory. The id is already
+  // known to be a single safe path segment and the destination is known to be
+  // inside the animations dir, so this rm is bounded to one entry. Argv form,
+  // never a shell string — no part of this is parsed by a shell.
+  function _prepareJobDir(job) {
+    prepareDirProcess.job = job
+    prepareDirProcess.command = ["rm", "-rf", "--", job.destDir]
+    prepareDirProcess.running = true
+  }
+
+  Process {
+    id: prepareDirProcess
+    property var job: null
+    running: false
+    onExited: function(code, signal) {
+      var job = prepareDirProcess.job
+      prepareDirProcess.job = null
+      if (!job) return
+      if (code !== 0) {
+        _onInstallFailed(job, "could not clear the animation directory")
+        return
+      }
+      _downloadNextFile(job)
+    }
   }
 
   function _downloadNextFile(job) {
     if (job.fileIndex >= job.files.length) {
-      _onInstallComplete(job.entry)
-      root._installJobs.shift()
-      root.installingIds = root.installingIds.filter(function(id) { return id !== job.entry.id })
-      _processNextJob()
+      _onInstallComplete(job)
+      _finishJob(job)
       return
     }
-    var url = job.files[job.fileIndex]
-    var filename = url.split("/").slice(-1)[0]
-    var destDir = root.userAnimationsDir + "/" + job.entry.id
-    var destPath = destDir + "/" + filename
-    _downloadFile(url, destPath, function() {
+    var file = job.files[job.fileIndex]
+    _downloadFile(file.url, file.dest, function() {
       job.fileIndex++
       _downloadNextFile(job)
-    })
+    }, job)
   }
 
-  function _downloadFile(url, dest, callback) {
+  function _downloadFile(url, dest, callback, job) {
     downloadProcess.url = url
     downloadProcess.dest = dest
     downloadProcess.callback = callback
+    downloadProcess.job = job
     downloadProcess.running = true
   }
 
@@ -199,14 +270,61 @@ ColumnLayout {
     property string url: ""
     property string dest: ""
     property var callback: null
-    command: ["curl", "-sL", "--create-dirs", "-o", dest, url]
+    property var job: null
+    // --fail so an HTTP error is an error rather than a saved error page,
+    // --proto so a redirect cannot leave https, and the two limits so a
+    // hostile or broken source cannot fill the disk or hang the queue.
+    command: [
+      "curl", "-sL", "--fail",
+      "--proto", "=https", "--proto-redir", "=https",
+      "--max-filesize", "10485760",
+      "--max-time", "30",
+      "--create-dirs", "-o", dest, url
+    ]
     running: false
     onExited: function(code, signal) {
-      if (downloadProcess.callback) downloadProcess.callback()
+      var callback = downloadProcess.callback
+      var job = downloadProcess.job
+      downloadProcess.callback = null
+      downloadProcess.job = null
+      if (code !== 0) {
+        // Previously the callback ran unconditionally, so a failed download
+        // counted as a completed install.
+        if (job) _onInstallFailed(job, "download failed for " + downloadProcess.url + " (curl exit " + code + ")")
+        return
+      }
+      if (callback) callback()
     }
   }
 
-  function _onInstallComplete(entry) {
+  function _finishJob(job) {
+    root._installJobs.shift()
+    root.installingIds = root.installingIds.filter(function(id) { return id !== job.id })
+    _processNextJob()
+  }
+
+  function _onInstallFailed(job, reason) {
+    root.installError = "Install of \"" + job.id + "\" failed: " + reason + "."
+    if (root.failedIds.indexOf(job.id) === -1) {
+      root.failedIds = root.failedIds.concat([job.id])
+    }
+    _finishJob(job)
+  }
+
+  // Looks up the already-validated local filename for the entry's declared
+  // preview, instead of deriving a path from index data a second time.
+  function _previewPathFor(job) {
+    var declared = job.entry.preview
+    if (typeof declared !== "string" || declared === "") return ""
+    var wanted = MarketplaceValidation.fileNameFromUrl(declared)
+    for (var i = 0; i < job.files.length; i++) {
+      if (job.files[i].filename === wanted) return job.files[i].dest
+    }
+    return ""
+  }
+
+  function _onInstallComplete(job) {
+    var entry = job.entry
     var params = {}
     var paramsArr = entry.params || []
     for (var i = 0; i < paramsArr.length; i++) {
@@ -227,7 +345,7 @@ ColumnLayout {
       _source: "marketplace",
       _manifestVersion: entry.version || "1.0.0",
       _author: entry.author || "",
-      _preview: root.userAnimationsDir + "/" + entry.id + "/" + (entry.preview ? entry.preview.split("/").slice(-1)[0] : "")
+      _preview: _previewPathFor(job)
     }
     root.animationInstalled(entry.id, schemaEntry)
   }
@@ -293,6 +411,32 @@ ColumnLayout {
     wrapMode: Text.WordWrap
   }
 
+  // An install we refused, or one that failed partway through.
+  Text {
+    Layout.fillWidth: true
+    visible: root.installError !== ""
+    text: root.installError
+    color: Color.urgent
+    font.family: Style.font.family
+    font.pixelSize: Style.font.body
+    wrapMode: Text.WordWrap
+  }
+
+  // Entries the index offered that failed validation. Shown rather than
+  // hidden silently, so a malformed submission is visible to the user and
+  // reportable upstream.
+  Text {
+    Layout.fillWidth: true
+    visible: root.rejectedEntries.length > 0
+    text: root.rejectedEntries.length + (root.rejectedEntries.length === 1
+      ? " catalog entry was hidden because it failed validation."
+      : " catalog entries were hidden because they failed validation.")
+    color: Color.muted
+    font.family: Style.font.family
+    font.pixelSize: Style.font.caption
+    wrapMode: Text.WordWrap
+  }
+
   // Animation cards (Flow without a nested ScrollView, so the outer panel ScrollView handles it)
   Flow {
     Layout.fillWidth: true
@@ -307,6 +451,7 @@ ColumnLayout {
         entry: modelData
         installed: root.isInstalled(modelData.id)
         installing: root.installingIds.indexOf(modelData.id) !== -1
+        failed: root.failedIds.indexOf(modelData.id) !== -1
         onInstallClicked: root.installAnimation(modelData)
         onUninstallClicked: root.animationUninstalled(modelData.id)
       }
