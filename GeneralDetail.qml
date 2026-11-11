@@ -7,6 +7,7 @@ import qs.Commons
 import qs.Ui
 import "ParamMeta.js" as ParamMeta
 import "MarketplaceValidation.js" as MarketplaceValidation
+import "HotkeyKeys.js" as HotkeyKeys
 
 // Settings that apply to the screensaver as a whole, rather than to one
 // animation.
@@ -272,24 +273,64 @@ ColumnLayout {
       font.pixelSize: Style.font.caption
     }
 
-    // C.TextField from QtQuick.Controls — matches the pattern used by Scout, Daybook, etc.
-    C.TextField {
+    // Deliberately NOT a TextField. An editable QQuickTextInput connects the
+    // clipboard's dataChanged to q_canPasteChanged, which reads the offered
+    // mime data whenever the field is editable; Qt's Wayland data-offer reader
+    // appends until EOF with a per-read wait and no total byte or time ceiling,
+    // so a hostile clipboard client could block this shell's GUI thread without
+    // the user ever pasting. A keybind is a key, not free text, so capture the
+    // keypress directly and keep no text input in the scene at all.
+    Rectangle {
       id: hotkeyField
       implicitWidth: Style.space(80)
-      placeholderText: "F12"
-      text: root.hotkeyText
-      color: Color.foreground
-      placeholderTextColor: Color.muted
-      font.family: Style.font.family
-      font.pixelSize: Style.font.caption
-      background: Rectangle {
-        color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.08)
-        border.color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.2)
-        radius: Style.cornerRadius
+      implicitHeight: Style.space(24)
+      color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.08)
+      border.color: hotkeyField.activeFocus
+        ? Color.accent
+        : Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.2)
+      border.width: Style.normalBorderWidth
+      radius: Style.cornerRadius
+
+      activeFocusOnTab: true
+      Accessible.role: Accessible.Button
+      Accessible.name: "Screensaver hotkey"
+      Accessible.description: "Click, then press the key to bind"
+
+      Text {
+        anchors.centerIn: parent
+        text: hotkeyField.activeFocus && root.hotkeyText === ""
+          ? "press a key…"
+          : (root.hotkeyText !== "" ? root.hotkeyText : "F12")
+        color: root.hotkeyText !== "" ? Color.foreground : Color.muted
+        font.family: Style.font.family
+        font.pixelSize: Style.font.caption
       }
-      onTextEdited: {
-        root.hotkeyText = text
-        root.hotkeyCopyStatus = ""
+
+      MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: hotkeyField.forceActiveFocus()
+      }
+
+      Keys.onPressed: function(event) {
+        // Backspace and Delete clear, so a mis-set key is recoverable.
+        // Escape is deliberately NOT handled: Panel.qml declares a
+        // Shortcut { sequence: "Escape" } to close the panel, and a QML
+        // Shortcut resolves at window level before item key handlers, so
+        // accepting Escape here cannot stop the panel closing anyway.
+        if (event.key === Qt.Key_Backspace || event.key === Qt.Key_Delete) {
+          root.hotkeyText = ""
+          root.hotkeyCopyStatus = ""
+          event.accepted = true
+          return
+        }
+        if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) return
+        var name = HotkeyKeys.hyprlandKeyName(event.key, event.text)
+        if (name !== "") {
+          root.hotkeyText = name
+          root.hotkeyCopyStatus = ""
+        }
+        event.accepted = true
       }
     }
   }

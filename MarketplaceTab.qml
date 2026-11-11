@@ -367,11 +367,40 @@ ColumnLayout {
 
     TextField {
       id: searchField
+      // readOnly, then driven by key events below. An *editable*
+      // QQuickTextInput connects the clipboard's dataChanged to
+      // q_canPasteChanged, which reads the offered mime data on every
+      // clipboard change; Qt's Wayland data-offer reader appends until EOF
+      // with a per-read wait and no total byte or time ceiling, so a hostile
+      // clipboard client could stall this shell's GUI thread without the user
+      // pasting anything. readOnly removes that automatic read while keeping
+      // the field's appearance and placeholder.
+      readOnly: true
       placeholderText: "Search animations…"
       Layout.preferredWidth: Style.space(160)
       onTextChanged: {
         root.filterText = text
         if (text && root.sortMode !== "alpha") root.sortMode = "alpha"
+      }
+      Keys.onPressed: function(event) {
+        if (event.key === Qt.Key_Backspace) {
+          searchField.text = searchField.text.slice(0, -1)
+          event.accepted = true
+          return
+        }
+        // Escape is deliberately not handled here: Panel.qml's
+        // Shortcut { sequence: "Escape" } closes the panel and resolves before
+        // item key handlers, so intercepting it would not work. Backspace
+        // clears the filter a character at a time, and clicking away works.
+        // One printable character at a time, with a bounded total: nothing
+        // here can pull in an arbitrarily large value from elsewhere.
+        if (typeof event.text === "string" && event.text.length === 1 && searchField.text.length < 64) {
+          var code = event.text.charCodeAt(0)
+          if (code >= 0x20 && code !== 0x7f) {
+            searchField.text += event.text
+            event.accepted = true
+          }
+        }
       }
     }
 
