@@ -133,6 +133,34 @@ check("object without length still rejected", V.validateEntry({ id: "bonsai", fi
 check("negative length rejected", V.validateEntry({ id: "bonsai", files: { length: -1 } }, BASE).ok, false);
 check("fractional length rejected", V.validateEntry({ id: "bonsai", files: { length: 1.5, 0: RAW } }, BASE).ok, false);
 
+// A declared length must be bounded BEFORE anything is copied or iterated:
+// an array-like claiming a trillion entries previously reached the copy loop
+// and hung the shared QML shell on first show of the Marketplace tab, with no
+// Install click involved. These assert both the rejection and that it is
+// immediate — a regression here would hang this test run, so each is timed.
+function timed(label, fn, expected) {
+  var started = Date.now();
+  var actual = fn();
+  var elapsed = Date.now() - started;
+  check(label, actual, expected);
+  check(label + " is immediate (<100ms)", elapsed < 100, true);
+}
+timed("huge declared files length rejected",
+  function () { return V.validateEntry({ id: "ocean", files: { length: 1000000000000 } }, BASE).ok; }, false);
+check("huge declared files reason",
+  V.validateEntry({ id: "ocean", files: { length: 1000000000000 } }, BASE).reason, "entry lists too many files");
+timed("huge declared catalog length rejected",
+  function () { return V.validateIndex({ length: 1000000000000 }, BASE).entries.length; }, 0);
+timed("oversized real file array rejected",
+  function () {
+    var many = []; for (var i = 0; i < V.MAX_FILES_PER_ENTRY + 1; i++) many.push(RAW);
+    return V.validateEntry({ id: "bonsai", files: many }, BASE).ok;
+  }, false);
+check("catalog at the limit still accepted",
+  V.validateIndex(sequenceLike([good]), BASE).entries.length, 1);
+check("oversized catalog reports a reason",
+  V.validateIndex({ length: 1000000000000 }, BASE).rejected.length > 0, true);
+
 check("no files rejected", V.validateEntry({ id: "bonsai", files: [] }, BASE).ok, false);
 check("missing files rejected", V.validateEntry({ id: "bonsai" }, BASE).ok, false);
 check("non-array files rejected", V.validateEntry({ id: "bonsai", files: "index.html" }, BASE).ok, false);

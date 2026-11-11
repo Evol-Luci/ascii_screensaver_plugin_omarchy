@@ -30,6 +30,12 @@ var ALLOWED_HOSTS = [
 
 var MAX_FILES_PER_ENTRY = 8;
 
+// The catalog is fetched automatically on first show of the Marketplace tab,
+// so its item count is bounded too. The live catalog holds 35 entries; this
+// leaves room to grow while keeping a hostile index from declaring a huge
+// collection.
+var MAX_CATALOG_ENTRIES = 1000;
+
 // Hyprland key names: letters, digits, and the XF86_* media keys.
 var HOTKEY_PATTERN = /^[A-Za-z0-9_]{1,32}$/;
 
@@ -114,8 +120,24 @@ function destinationFor(baseDir, id, filename) {
   return dest;
 }
 
+// The number of items a value claims to hold, or -1 when it is not a list.
+//
+// This is separate from the copy below because the declared length is
+// attacker-supplied and must be bounded *before* anything iterates over it.
+// A catalog of `{"files": {"length": 1000000000000}}` is a few bytes on the
+// wire and would otherwise reach a trillion-iteration copy, hanging the shared
+// QML shell as soon as the Marketplace tab is shown — no Install click needed.
+function declaredLength(value) {
+  if (Object.prototype.toString.call(value) === "[object Array]") return value.length;
+  if (!value || typeof value !== "object") return -1;
+  var length = value.length;
+  if (typeof length !== "number" || !isFinite(length)) return -1;
+  if (length < 0 || Math.floor(length) !== length) return -1;
+  return length;
+}
+
 // Returns a real Array copy of an array-like value, or null when the value is
-// not a list at all.
+// not a list or declares more than maxLength items. Callers must pass a bound.
 //
 // This exists because QML's JS engine does not hand back plain Arrays. Once a
 // value has round-tripped through a `property var` and a Repeater's
@@ -125,12 +147,9 @@ function destinationFor(baseDir, id, filename) {
 // while the identical data passed at index-parse time, where JSON.parse had
 // just produced a true Array. Duck-type the shape instead, and copy into a
 // real Array so the rest of this module can rely on Array semantics.
-function toList(value) {
-  if (Object.prototype.toString.call(value) === "[object Array]") return value;
-  if (!value || typeof value !== "object") return null;
-  var length = value.length;
-  if (typeof length !== "number" || !isFinite(length)) return null;
-  if (length < 0 || Math.floor(length) !== length) return null;
+function toList(value, maxLength) {
+  var length = declaredLength(value);
+  if (length < 0 || length > maxLength) return null;
   var out = [];
   for (var i = 0; i < length; i++) out.push(value[i]);
   return out;
@@ -147,10 +166,12 @@ function validateEntry(entry, baseDir) {
   if (typeof baseDir !== "string" || baseDir.length === 0) return reject("missing animations directory");
   if (!isValidAnimationId(entry.id)) return reject("invalid animation id");
 
-  var files = toList(entry.files);
+  // Bound the declared count before the copy, not after.
+  var declared = declaredLength(entry.files);
+  if (declared < 0 || declared === 0) return reject("entry has no file list");
+  if (declared > MAX_FILES_PER_ENTRY) return reject("entry lists too many files");
+  var files = toList(entry.files, MAX_FILES_PER_ENTRY);
   if (!files) return reject("entry has no file list");
-  if (files.length === 0) return reject("entry has no file list");
-  if (files.length > MAX_FILES_PER_ENTRY) return reject("entry lists too many files");
 
   var resolved = [];
   var seen = {};
@@ -175,7 +196,13 @@ function validateEntry(entry, baseDir) {
 function validateIndex(animations, baseDir) {
   var entries = [];
   var rejected = [];
-  var list = toList(animations) || [];
+  // The outer collection needs its own bound, for the same reason: it is read
+  // automatically when the Marketplace tab first appears.
+  var declared = declaredLength(animations);
+  if (declared < 0 || declared > MAX_CATALOG_ENTRIES) {
+    return { entries: [], rejected: [{ id: "(catalog)", reason: "catalog is not a usable list of animations" }] };
+  }
+  var list = toList(animations, MAX_CATALOG_ENTRIES) || [];
   for (var i = 0; i < list.length; i++) {
     var result = validateEntry(list[i], baseDir);
     if (result.ok) {
@@ -211,6 +238,7 @@ if (typeof module !== "undefined") {
     validateEntry: validateEntry,
     validateIndex: validateIndex,
     isValidHotkeyKey: isValidHotkeyKey,
-    MAX_FILES_PER_ENTRY: MAX_FILES_PER_ENTRY
+    MAX_FILES_PER_ENTRY: MAX_FILES_PER_ENTRY,
+    MAX_CATALOG_ENTRIES: MAX_CATALOG_ENTRIES
   };
 }
