@@ -114,6 +114,28 @@ function destinationFor(baseDir, id, filename) {
   return dest;
 }
 
+// Returns a real Array copy of an array-like value, or null when the value is
+// not a list at all.
+//
+// This exists because QML's JS engine does not hand back plain Arrays. Once a
+// value has round-tripped through a `property var` and a Repeater's
+// modelData, an array arrives as a sequence object whose
+// Object.prototype.toString tag is "[object V4Sequence]", not "[object Array]".
+// Checking the tag therefore rejected perfectly good entries at install time
+// while the identical data passed at index-parse time, where JSON.parse had
+// just produced a true Array. Duck-type the shape instead, and copy into a
+// real Array so the rest of this module can rely on Array semantics.
+function toList(value) {
+  if (Object.prototype.toString.call(value) === "[object Array]") return value;
+  if (!value || typeof value !== "object") return null;
+  var length = value.length;
+  if (typeof length !== "number" || !isFinite(length)) return null;
+  if (length < 0 || Math.floor(length) !== length) return null;
+  var out = [];
+  for (var i = 0; i < length; i++) out.push(value[i]);
+  return out;
+}
+
 function reject(reason) {
   return { ok: false, reason: reason, id: "", files: [] };
 }
@@ -125,10 +147,8 @@ function validateEntry(entry, baseDir) {
   if (typeof baseDir !== "string" || baseDir.length === 0) return reject("missing animations directory");
   if (!isValidAnimationId(entry.id)) return reject("invalid animation id");
 
-  var files = entry.files;
-  if (!files || Object.prototype.toString.call(files) !== "[object Array]") {
-    return reject("entry has no file list");
-  }
+  var files = toList(entry.files);
+  if (!files) return reject("entry has no file list");
   if (files.length === 0) return reject("entry has no file list");
   if (files.length > MAX_FILES_PER_ENTRY) return reject("entry lists too many files");
 
@@ -155,7 +175,7 @@ function validateEntry(entry, baseDir) {
 function validateIndex(animations, baseDir) {
   var entries = [];
   var rejected = [];
-  var list = (animations && Object.prototype.toString.call(animations) === "[object Array]") ? animations : [];
+  var list = toList(animations) || [];
   for (var i = 0; i < list.length; i++) {
     var result = validateEntry(list[i], baseDir);
     if (result.ok) {

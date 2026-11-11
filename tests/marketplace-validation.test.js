@@ -112,6 +112,27 @@ check("systemd unit drop rejected",
   V.validateEntry({ id: "../../../../.config/systemd/user", files: [RAW.replace("index.html", "evil.service")] }, BASE).ok,
   false);
 
+// QML hands JS back array-like sequence objects (V4Sequence), not real Arrays,
+// once a value has round-tripped through a `property var` and a Repeater's
+// modelData. An Array-tag check rejects those, which broke install while the
+// identical data passed at index-parse time. Simulate one here.
+function sequenceLike(items) {
+  var seq = { length: items.length };
+  for (var i = 0; i < items.length; i++) seq[i] = items[i];
+  return seq; // Object.prototype.toString.call(seq) === "[object Object]"
+}
+var seqEntry = { id: "bonsai", name: "Bonsai", files: sequenceLike(good.files) };
+check("array-like file list accepted", V.validateEntry(seqEntry, BASE).ok, true);
+check("array-like file count", V.validateEntry(seqEntry, BASE).files.length, 3);
+check("array-like first dest", V.validateEntry(seqEntry, BASE).files[0].dest, BASE + "/bonsai/index.html");
+check("array-like index accepted", V.validateIndex(sequenceLike([good]), BASE).entries.length, 1);
+check("array-like traversal still rejected",
+  V.validateEntry({ id: "../../../../", files: sequenceLike([RAW]) }, BASE).ok, false);
+check("string file list still rejected", V.validateEntry({ id: "bonsai", files: "index.html" }, BASE).ok, false);
+check("object without length still rejected", V.validateEntry({ id: "bonsai", files: { a: RAW } }, BASE).ok, false);
+check("negative length rejected", V.validateEntry({ id: "bonsai", files: { length: -1 } }, BASE).ok, false);
+check("fractional length rejected", V.validateEntry({ id: "bonsai", files: { length: 1.5, 0: RAW } }, BASE).ok, false);
+
 check("no files rejected", V.validateEntry({ id: "bonsai", files: [] }, BASE).ok, false);
 check("missing files rejected", V.validateEntry({ id: "bonsai" }, BASE).ok, false);
 check("non-array files rejected", V.validateEntry({ id: "bonsai", files: "index.html" }, BASE).ok, false);
