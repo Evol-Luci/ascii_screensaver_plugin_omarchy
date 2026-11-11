@@ -62,6 +62,20 @@ check("unknown host", V.isAllowedSourceUrl("https://evil.example/x/index.html"),
 check("userinfo smuggling", V.isAllowedSourceUrl("https://raw.githubusercontent.com@evil.example/x/index.html"), false);
 check("host prefix trick", V.isAllowedSourceUrl("https://raw.githubusercontent.com.evil.example/x/index.html"), false);
 check("whitespace in url", V.isAllowedSourceUrl("https://raw.githubusercontent.com/a b/index.html"), false);
+// curl expands [n-m] and {a,b} in a URL itself, so one allowed-host URL with a
+// valid-looking filename can become many transfers. The download passes
+// --globoff, and these keep such a URL out of the argv in the first place.
+check("bracket range in query", V.isAllowedSourceUrl(RAW + "?attempt=[1-100000]"), false);
+check("bracket range in path", V.isAllowedSourceUrl("https://raw.githubusercontent.com/a/[1-9]/index.html"), false);
+check("brace list in path", V.isAllowedSourceUrl("https://raw.githubusercontent.com/a/{x,y}/index.html"), false);
+check("brace list in query", V.isAllowedSourceUrl(RAW + "?v={1,2}"), false);
+check("lone bracket", V.isAllowedSourceUrl(RAW + "?v=["), false);
+check("lone brace", V.isAllowedSourceUrl(RAW + "?v=}"), false);
+check("entry with globbing url rejected",
+  V.validateEntry({ id: "bonsai", files: [RAW + "?attempt=[1-100000]"] }, BASE).ok, false);
+check("entry with globbing url reason",
+  V.validateEntry({ id: "bonsai", files: [RAW + "?attempt=[1-100000]"] }, BASE).reason,
+  "file source is not an allowed https url");
 check("empty url", V.isAllowedSourceUrl(""), false);
 
 // --- path normalization and containment -----------------------------------

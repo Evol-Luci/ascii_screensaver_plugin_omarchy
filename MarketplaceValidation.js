@@ -69,6 +69,12 @@ function fileNameFromUrl(url) {
 function isAllowedSourceUrl(url) {
   if (typeof url !== "string" || url.length === 0) return false;
   if (/[\s\u0000-\u001f\u007f]/.test(url)) return false;
+  // curl performs its own range/list expansion on the URL, so a single
+  // allowed-host URL such as ".../index.html?attempt=[1-100000]" becomes that
+  // many transfers. Passing a structured argv does not disable it; the
+  // download passes --globoff, and these characters are refused here too so a
+  // globbing URL never reaches the argv at all.
+  if (/[\[\]{}]/.test(url)) return false;
   var match = url.match(/^https:\/\/([^\/?#]+)\//);
   if (!match) return false;
   var authority = match[1];

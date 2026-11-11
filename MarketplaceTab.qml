@@ -202,7 +202,8 @@ ColumnLayout {
       id: checked.id,
       files: checked.files,
       destDir: root.userAnimationsDir + "/" + checked.id,
-      fileIndex: 0
+      fileIndex: 0,
+      finished: false
     })
     if (!root._installBusy) _processNextJob()
   }
@@ -210,10 +211,33 @@ ColumnLayout {
   function _processNextJob() {
     if (root._installJobs.length === 0) {
       root._installBusy = false
+      jobDeadline.stop()
       return
     }
     root._installBusy = true
+    jobDeadline.restart()
     _prepareJobDir(root._installJobs[0])
+  }
+
+  // curl's --max-time bounds each transfer, not the job, so a hostile source
+  // could hold the single install queue for files × 30s. This bounds the whole
+  // job and tears the child down, so the queue always comes back.
+  Timer {
+    id: jobDeadline
+    interval: 150000
+    repeat: false
+    onTriggered: {
+      var job = root._installJobs.length > 0 ? root._installJobs[0] : null
+      // Detach the handlers before killing the children: stopping a Process
+      // raises exited, and that must not be attributed to this job a second
+      // time, nor to whichever job starts next.
+      prepareDirProcess.job = null
+      downloadProcess.job = null
+      downloadProcess.callback = null
+      prepareDirProcess.running = false
+      downloadProcess.running = false
+      if (job) _onInstallFailed(job, "install exceeded the time limit")
+    }
   }
 
   // Clear the entry's directory before writing into it, so a symlink left
@@ -274,8 +298,12 @@ ColumnLayout {
     // --fail so an HTTP error is an error rather than a saved error page,
     // --proto so a redirect cannot leave https, and the two limits so a
     // hostile or broken source cannot fill the disk or hang the queue.
+    // --globoff because curl expands [n-m] and {a,b} in the URL itself, so one
+    // catalog URL could otherwise become many transfers regardless of the
+    // per-entry file limit. --max-time bounds each transfer only, so the
+    // whole job is bounded separately by jobDeadline below.
     command: [
-      "curl", "-sL", "--fail",
+      "curl", "-sL", "--fail", "--globoff",
       "--proto", "=https", "--proto-redir", "=https",
       "--max-filesize", "10485760",
       "--max-time", "30",
@@ -297,13 +325,20 @@ ColumnLayout {
     }
   }
 
+  // Every job ends exactly once. The deadline can fire while a child is
+  // mid-exit, so without this a single job could be retired twice and shift
+  // the next one off the queue unprocessed.
   function _finishJob(job) {
+    if (job.finished) return
+    job.finished = true
+    jobDeadline.stop()
     root._installJobs.shift()
     root.installingIds = root.installingIds.filter(function(id) { return id !== job.id })
     _processNextJob()
   }
 
   function _onInstallFailed(job, reason) {
+    if (job.finished) return
     root.installError = "Install of \"" + job.id + "\" failed: " + reason + "."
     if (root.failedIds.indexOf(job.id) === -1) {
       root.failedIds = root.failedIds.concat([job.id])
